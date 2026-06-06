@@ -1,0 +1,371 @@
+import OutfitHistory from '../models/OutfitHistory.js';
+
+// Color Harmony rules
+const getColorCompatibilityScore = (topColor, bottomColor, shoeColor, jacketColor = null) => {
+  const primaryColors = [topColor, bottomColor, shoeColor];
+  if (jacketColor) primaryColors.push(jacketColor);
+
+  const colors = primaryColors.map(c => c.toLowerCase().trim());
+  const neutrals = ['white', 'black', 'grey', 'gray', 'beige', 'brown', 'khaki', 'cream', 'navy', 'navy blue'];
+
+  const neutralCount = colors.filter(c => neutrals.includes(c)).length;
+  const totalItems = colors.length;
+
+  if (neutralCount === totalItems) {
+    const uniqueColors = new Set(colors);
+    if (uniqueColors.size === 1) {
+      if (colors[0] === 'black') return 40;
+      return 32;
+    }
+    return 40;
+  }
+
+  if (neutralCount >= totalItems - 1) {
+    return 38;
+  }
+
+  const hasColor = (c) => colors.includes(c);
+
+  if (hasColor('olive') && (hasColor('brown') || hasColor('beige') || hasColor('rust'))) return 38;
+  if ((hasColor('navy') || hasColor('navy blue')) && (hasColor('yellow') || hasColor('mustard'))) return 36;
+  if (hasColor('pink') && (hasColor('grey') || hasColor('gray'))) return 35;
+  if ((hasColor('blue') || hasColor('navy blue')) && (hasColor('brown') || hasColor('tan'))) return 37;
+
+  const clashPairs = [
+    ['red', 'green'],
+    ['purple', 'yellow'],
+    ['orange', 'pink'],
+    ['green', 'pink'],
+    ['red', 'pink']
+  ];
+
+  for (const pair of clashPairs) {
+    if (colors.includes(pair[0]) && colors.includes(pair[1])) {
+      return 15;
+    }
+  }
+
+  return 28;
+};
+
+// Occasion Matching logic
+const getOccasionScore = (occasion, itemCategories, itemStyles) => {
+  const styles = itemStyles.map(s => s.toLowerCase().trim());
+  const categories = itemCategories.map(c => c.toLowerCase().trim());
+
+  switch (occasion) {
+    case 'placement interview':
+      const hasTshirt = categories.includes('t-shirt');
+      const hasShorts = categories.includes('shorts');
+      const isAllFormal = styles.every(s => s === 'formal');
+      
+      if (hasTshirt || hasShorts) return 5;
+      if (isAllFormal) return 25;
+      if (styles.filter(s => s === 'formal').length >= 2) return 18;
+      return 10;
+
+    case 'office':
+      if (categories.includes('shorts')) return 5;
+      const officeFormals = styles.filter(s => s === 'formal' || s === 'casual').length;
+      if (officeFormals === totalItemsCount(categories)) {
+        const formalCount = styles.filter(s => s === 'formal').length;
+        if (formalCount >= 1) return 25;
+        return 20;
+      }
+      return 12;
+
+    case 'college':
+      if (categories.includes('shorts')) return 22;
+      if (styles.includes('formal') && styles.includes('casual')) return 20;
+      if (styles.every(s => s === 'casual')) return 25;
+      return 15;
+
+    case 'date':
+      const dateStyleCount = styles.filter(s => s === 'casual' || s === 'party' || s === 'travel').length;
+      if (dateStyleCount === totalItemsCount(categories)) {
+        const hasShirt = categories.includes('shirt');
+        const hasShorts = categories.includes('shorts');
+        if (hasShirt && !hasShorts) return 25;
+        if (hasShorts) return 15;
+        return 20;
+      }
+      return 15;
+
+    case 'wedding':
+    case 'festival':
+      const tradCount = styles.filter(s => s === 'traditional').length;
+      if (tradCount >= 1) return 25;
+      if (styles.includes('formal')) return 18;
+      return 8;
+
+    case 'party':
+      const hasPartyStyle = styles.includes('party');
+      if (hasPartyStyle) return 25;
+      if (styles.includes('casual')) return 20;
+      return 12;
+
+    case 'travel':
+      const travelComfort = styles.every(s => s === 'casual' || s === 'travel');
+      if (travelComfort) return 25;
+      if (styles.includes('formal')) return 12;
+      return 20;
+
+    case 'casual outing':
+    default:
+      if (styles.every(s => s === 'casual' || s === 'travel')) return 25;
+      return 20;
+  }
+};
+
+const totalItemsCount = (arr) => arr.length;
+
+// Weather Matching logic
+const getWeatherScore = (weather, items) => {
+  if (!weather) return 10;
+
+  const temp = weather.temp;
+  const isRainy = weather.rainProbability > 50 || weather.condition.includes('rain');
+  
+  let score = 15;
+
+  const categories = items.map(i => i.category);
+  const seasons = items.map(i => i.season);
+
+  if (temp > 28) {
+    if (categories.includes('jacket')) {
+      score -= 8;
+    }
+    if (categories.includes('shorts')) {
+      score += 2;
+    }
+    if (seasons.includes('winter')) {
+      score -= 5;
+    }
+    score = Math.max(2, score);
+  }
+
+  if (temp < 16) {
+    if (categories.includes('jacket')) {
+      score += 2;
+    } else {
+      score -= 8;
+    }
+    if (categories.includes('shorts')) {
+      score -= 7;
+    }
+    if (seasons.includes('winter')) {
+      score += 2;
+    }
+    score = Math.max(2, score);
+  }
+
+  if (isRainy) {
+    const hasSuedeShoes = items.some(item => 
+      item.category === 'shoes' && 
+      (item.tags?.includes('suede') || item.color === 'white' || item.tags?.includes('mesh'))
+    );
+    if (hasSuedeShoes) {
+      score -= 6;
+    }
+    const hasLightBottom = items.some(item => 
+      ['pants', 'jeans'].includes(item.category) && 
+      ['white', 'beige', 'light grey', 'cream'].includes(item.color)
+    );
+    if (hasLightBottom) {
+      score -= 4;
+    }
+    score = Math.max(1, score);
+  }
+
+  return Math.min(15, Math.max(0, score));
+};
+
+// User Style Preference Matching
+const getUserPreferenceScore = (styleProfile, items) => {
+  if (!styleProfile) return 5;
+
+  const preferredColors = (styleProfile.preferredColors || []).map(c => c.toLowerCase());
+  const preferredStyle = styleProfile.preferredStyle ? styleProfile.preferredStyle.toLowerCase() : '';
+
+  let score = 0;
+
+  items.forEach(item => {
+    if (preferredColors.includes(item.color.toLowerCase())) {
+      score += 2;
+    }
+    if (item.style.toLowerCase() === preferredStyle) {
+      score += 2;
+    }
+  });
+
+  return Math.min(10, score);
+};
+
+// Freshness Matching
+const getFreshnessScore = (recentWornItemIds, items) => {
+  let score = 10;
+  
+  items.forEach(item => {
+    // items.id is numeric or string in Postgres
+    const itemIdStr = String(item.id);
+    const lastWornIndex = recentWornItemIds.indexOf(itemIdStr);
+    
+    if (lastWornIndex !== -1) {
+      if (lastWornIndex === 0) score -= 7;
+      else if (lastWornIndex === 1) score -= 5;
+      else if (lastWornIndex === 2) score -= 3;
+      else score -= 1;
+    }
+  });
+
+  return Math.max(0, score);
+};
+
+/**
+ * GENERATE OUTFITS
+ */
+export const generateOutfitRecommendations = async (user, wardrobeItems, occasion, weather, historyLimit = 10) => {
+  // 1. Fetch outfit history for freshness using Sequelize queries
+  const recentOutfits = await OutfitHistory.findAll({
+    where: { userId: user.id },
+    order: [['dateWorn', 'DESC']],
+    limit: historyLimit
+  });
+
+  // Collect item IDs worn recently
+  const recentWornItemIds = [];
+  recentOutfits.forEach(outfit => {
+    if (outfit.outfitItems) {
+      outfit.outfitItems.forEach(itemId => {
+        const idStr = String(itemId);
+        if (!recentWornItemIds.includes(idStr)) {
+          recentWornItemIds.push(idStr);
+        }
+      });
+    }
+  });
+
+  // 2. Separate wardrobe items by category
+  const tops = wardrobeItems.filter(item => ['shirt', 't-shirt'].includes(item.category));
+  const bottoms = wardrobeItems.filter(item => ['pants', 'jeans', 'shorts'].includes(item.category));
+  const shoes = wardrobeItems.filter(item => item.category === 'shoes');
+  const jackets = wardrobeItems.filter(item => item.category === 'jacket');
+
+  // Hybrid fallback: Seed simulated essentials if categories are missing,
+  // enabling immediate styling layouts even with sparse wardrobes.
+  if (tops.length === 0) {
+    tops.push({
+      id: 'simulated-top',
+      category: 'shirt',
+      color: 'white',
+      style: 'casual',
+      season: 'all',
+      pattern: 'solid',
+      brand: 'Stylist Essential',
+      tags: ['essential', 'simulated'],
+      imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80',
+      isSimulated: true
+    });
+  }
+
+  if (bottoms.length === 0) {
+    bottoms.push({
+      id: 'simulated-bottom',
+      category: 'jeans',
+      color: 'black',
+      style: 'casual',
+      season: 'all',
+      pattern: 'solid',
+      brand: 'Stylist Essential',
+      tags: ['essential', 'simulated'],
+      imageUrl: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&q=80',
+      isSimulated: true
+    });
+  }
+
+  if (shoes.length === 0) {
+    shoes.push({
+      id: 'simulated-shoes',
+      category: 'shoes',
+      color: 'white',
+      style: 'casual',
+      season: 'all',
+      pattern: 'solid',
+      brand: 'Stylist Essential',
+      tags: ['essential', 'simulated'],
+      imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&q=80',
+      isSimulated: true
+    });
+  }
+
+  const combinations = [];
+
+  // Helper to push combinations
+  const addCombination = (top, bottom, shoe, jacket = null) => {
+    const items = [top, bottom, shoe];
+    if (jacket) items.push(jacket);
+
+    // Calculate sub-scores
+    const colorScore = getColorCompatibilityScore(top.color, bottom.color, shoe.color, jacket?.color);
+    
+    const categories = items.map(i => i.category);
+    const styles = items.map(i => i.style);
+    const occasionScore = getOccasionScore(occasion, categories, styles);
+    
+    const weatherScore = getWeatherScore(weather, items);
+    const preferenceScore = getUserPreferenceScore(user.styleProfile, items);
+    const freshnessScore = getFreshnessScore(recentWornItemIds, items);
+
+    const totalScore = colorScore + occasionScore + weatherScore + preferenceScore + freshnessScore;
+
+    // Convert items to map MongoDB _id to Postgres id for frontend compatibility
+    const mappedItems = items.map(i => {
+      const itemData = (typeof i.toJSON === 'function') ? i.toJSON() : i;
+      return {
+        ...itemData,
+        _id: i.id
+      };
+    });
+
+    combinations.push({
+      outfitItems: mappedItems,
+      score: Math.round(totalScore),
+      scoreBreakdown: {
+        colorCompatibility: Math.round(colorScore),
+        occasionMatch: Math.round(occasionScore),
+        weatherMatch: Math.round(weatherScore),
+        userPreferenceMatch: Math.round(preferenceScore),
+        freshness: Math.round(freshnessScore)
+      }
+    });
+  };
+
+  // Generate combos: Top + Bottom + Shoe
+  for (const top of tops) {
+    for (const bottom of bottoms) {
+      for (const shoe of shoes) {
+        addCombination(top, bottom, shoe);
+
+        if (jackets.length > 0 && (!weather || weather.temp <= 28)) {
+          for (const jacket of jackets) {
+            addCombination(top, bottom, shoe, jacket);
+          }
+        }
+      }
+    }
+  }
+
+  // Sort by score descending, with deterministic secondary sort when scores are equal
+  combinations.sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    // Stable secondary sort using stringified sorted item IDs
+    const aIds = a.outfitItems.map(i => String(i.id || i._id || '')).sort().join(',');
+    const bIds = b.outfitItems.map(i => String(i.id || i._id || '')).sort().join(',');
+    return aIds.localeCompare(bIds);
+  });
+
+  // Return top 15 combinations
+  return combinations.slice(0, 15);
+};
