@@ -1,18 +1,46 @@
 /**
  * Fetch current weather from OpenWeatherMap or simulate based on local season/coordinates
  */
-export const getWeather = async (lat, lon, city) => {
+export const getWeather = async (lat, lon, city, clientIp) => {
   const apiKey = process.env.WEATHER_API_KEY;
+  let cityName = city;
+  let simulatedLat = lat;
+  let simulatedLon = lon;
+
+  // Resolve location via Client IP if no direct location is supplied
+  if (!cityName && (!simulatedLat || !simulatedLon)) {
+    try {
+      const lookupUrl = clientIp ? `http://ip-api.com/json/${clientIp}` : 'http://ip-api.com/json';
+      const ipResponse = await fetch(lookupUrl);
+      if (ipResponse.ok) {
+        const ipData = await ipResponse.json();
+        if (ipData && ipData.status === 'success' && ipData.city) {
+          cityName = ipData.city;
+          // Apply Bengaluru to Hyderabad redirect mapping if routed to local ISP
+          if (cityName.toLowerCase() === 'bangalore' || cityName.toLowerCase() === 'bengaluru') {
+            cityName = 'Hyderabad';
+          }
+          simulatedLat = ipData.lat;
+          simulatedLon = ipData.lon;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not determine location from IP, falling back to default:", err.message);
+    }
+  }
+
+  // If still not resolved, default to Hyderabad
+  if (!cityName) cityName = 'Hyderabad';
 
   if (apiKey) {
     try {
       let url = `https://api.openweathermap.org/data/2.5/weather?appid=${apiKey}&units=metric`;
-      if (city) {
-        url += `&q=${encodeURIComponent(city)}`;
-      } else if (lat && lon) {
-        url += `&lat=${lat}&lon=${lon}`;
+      if (cityName) {
+        url += `&q=${encodeURIComponent(cityName)}`;
+      } else if (simulatedLat && simulatedLon) {
+        url += `&lat=${simulatedLat}&lon=${simulatedLon}`;
       } else {
-        url += `&q=Hyderabad`; // default city
+        url += `&q=Hyderabad`;
       }
 
       const response = await fetch(url);
@@ -26,7 +54,7 @@ export const getWeather = async (lat, lon, city) => {
         tempMin: data.main.temp_min,
         tempMax: data.main.temp_max,
         humidity: data.main.humidity,
-        condition: data.weather[0].main.toLowerCase(), // e.g. rain, clouds, clear, snow
+        condition: data.weather[0].main.toLowerCase(),
         description: data.weather[0].description,
         rainProbability: data.rain ? 80 : (data.weather[0].main.toLowerCase().includes('rain') ? 90 : 10),
         cityName: data.name,
@@ -37,31 +65,7 @@ export const getWeather = async (lat, lon, city) => {
     }
   }
 
-  let cityName = city;
-  let simulatedLat = lat;
-  let simulatedLon = lon;
-
-  if (!city && (!lat || !lon)) {
-    try {
-      const ipResponse = await fetch('http://ip-api.com/json');
-      if (ipResponse.ok) {
-        const ipData = await ipResponse.json();
-        if (ipData && ipData.status === 'success' && ipData.city) {
-          cityName = ipData.city;
-          if (cityName.toLowerCase() === 'bangalore' || cityName.toLowerCase() === 'bengaluru') {
-            cityName = 'Hyderabad';
-          }
-          simulatedLat = ipData.lat;
-          simulatedLon = ipData.lon;
-        }
-      }
-    } catch (err) {
-      console.warn("Could not determine location from IP, falling back to default:", err.message);
-    }
-  }
-
-  if (!cityName) cityName = 'Hyderabad';
-
+  // MOCK Fallback (Simulated Weather)
   // Seeded random helper to ensure consistency on the same day for the same city
   const getSeededRandom = (seedStr) => {
     let hash = 0;
@@ -72,7 +76,6 @@ export const getWeather = async (lat, lon, city) => {
     return x - Math.floor(x);
   };
 
-  // MOCK Fallback (Simulated Weather)
   const now = new Date();
   const month = now.getMonth(); // 0-11
   let temp = 25;
