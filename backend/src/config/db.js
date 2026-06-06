@@ -3,23 +3,44 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const sequelize = new Sequelize(
-  process.env.PG_DATABASE || 'wardrobe_iq',
-  process.env.PG_USER || 'postgres',
-  process.env.PG_PASSWORD || 'root',
-  {
-    host: process.env.PG_HOST || 'localhost',
-    port: process.env.PG_PORT || 5432,
+let sequelize;
+
+if (process.env.DATABASE_URL) {
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
-    logging: false, // disable logging for cleaner dev console logs
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    },
     pool: {
       max: 5,
       min: 0,
       acquire: 30000,
       idle: 10000
     }
-  }
-);
+  });
+} else {
+  sequelize = new Sequelize(
+    process.env.PG_DATABASE || 'wardrobe_iq',
+    process.env.PG_USER || 'postgres',
+    process.env.PG_PASSWORD || 'root',
+    {
+      host: process.env.PG_HOST || 'localhost',
+      port: process.env.PG_PORT || 5432,
+      dialect: 'postgres',
+      logging: false,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+      }
+    }
+  );
+}
 
 export let isDbConnected = false;
 
