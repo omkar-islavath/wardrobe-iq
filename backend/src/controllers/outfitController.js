@@ -112,18 +112,8 @@ export const generateOutfits = async (req, res) => {
   }
 
   try {
-    // Extract client IP address from headers (handling Render's reverse proxy)
-    let clientIp = req.headers['x-forwarded-for'] || req.ip;
-    if (clientIp && clientIp.includes(',')) {
-      clientIp = clientIp.split(',')[0].trim();
-    }
-    // Filter local loopback addresses so they don't break lookup
-    if (clientIp === '::1' || clientIp === '127.0.0.1' || clientIp === '::ffff:127.0.0.1') {
-      clientIp = '';
-    }
-
     // 1. Fetch user's weather conditions
-    const weather = await getWeather(lat, lon, city, clientIp);
+    const weather = await getWeather(lat, lon, city);
 
     // 2. Fetch all user wardrobe items using Sequelize ordered by ID
     const wardrobeItems = await WardrobeItem.findAll({

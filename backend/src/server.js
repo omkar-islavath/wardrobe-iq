@@ -20,9 +20,6 @@ connectDB();
 
 const app = express();
 
-// Trust proxy for correct client IP detection behind Render load balancer
-app.set('trust proxy', true);
-
 // Enable CORS
 app.use(cors());
 
