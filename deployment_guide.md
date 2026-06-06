@@ -4,21 +4,22 @@ This guide details how to deploy the **WardrobeIQ** application (both backend an
 
 ---
 
-## Step 1: Deploy a Render PostgreSQL Database
+## Step 1: Create a PostgreSQL Database on Neon (neon.tech)
 
-Render offers managed PostgreSQL databases that our Sequelize models can connect to.
+Neon offers a free, persistent serverless PostgreSQL database (with no 30-day deletion limit like Render's free tier).
 
-1. Go to your [Render Dashboard](https://dashboard.render.com/) and click **New** (top right) -> **PostgreSQL**.
-2. Configure the database details:
-   - **Name**: `wardrobe-iq-db`
-   - **Database**: `wardrobe_iq` (or leave blank for auto-generated)
-   - **User**: (leave blank for auto-generated)
-   - **Region**: Select a region close to your users (e.g., Singapore for Asia, Oregon for US).
-3. Scroll down and click **Create Database**.
-4. Once the database status changes to **Available**, look for the connection URLs on the right side under **Connections**:
-   - Copy the **Internal Database URL** (if you deploy the backend on Render in the same region, this is faster).
-   - Alternatively, copy the **External Database URL** (works from any region).
-   - *Example connection URL format*: `postgresql://db_user:password@host:port/database`
+1. Go to [Neon.tech](https://neon.tech/) and sign up / log in.
+2. Click **Create Project**.
+3. Configure the project details:
+   - **Project Name**: `wardrobe-iq-db`
+   - **Postgres Version**: Select the default (e.g., v16).
+   - **Region**: Select a region close to your users (e.g., Singapore for Asia, Oregon/Virginia for US).
+4. Click **Create Project**.
+5. Once created, you will be shown the **Connection Details** modal:
+   - Set the dropdown to **Connection string** (or choose URI).
+   - Copy the provided URL. It will look like:
+     `postgresql://neondb_owner:password@ep-some-host.region.aws.neon.tech/neondb?sslmode=require`
+   - This connection string will be used as the `DATABASE_URL` environment variable when configuring your Backend Web Service.
 
 ---
 
