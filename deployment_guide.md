@@ -57,7 +57,7 @@ Deploy the frontend folder as a Render **Static Site**.
 3. Configure the static site settings:
    - **Name**: `wardrobe-iq`
    - **Root Directory**: `frontend` (very important!)
-   - **Build Command**: `npm run build`
+   - **Build Command**: `npm install --legacy-peer-deps && npm run build`
    - **Publish Directory**: `dist`
 4. Expand the **Advanced** section and add the following Environment Variable:
    - **`VITE_API_URL`**: (Paste your Backend Web Service URL with `/api` appended, e.g., `https://wardrobe-iq-backend.onrender.com/api`).
