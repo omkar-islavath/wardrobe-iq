@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 import WardrobeItemImage from '../components/WardrobeItemImage';
 import {
   Search,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 
 const Wardrobe = () => {
+  const { user } = useContext(AuthContext);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -40,7 +42,9 @@ const Wardrobe = () => {
     tags: '',
   });
 
-  const categoriesList = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories', 'top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree'];
+  const maleCategories = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
+  const femaleCategories = ['top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree', 'shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
+  const categoriesList = user?.gender === 'female' ? femaleCategories : maleCategories;
   const colorsList = ['white', 'black', 'grey', 'navy blue', 'blue', 'olive', 'beige', 'brown', 'red', 'yellow', 'pink'];
   const stylesList = ['casual', 'formal', 'party', 'traditional', 'travel'];
   const seasonsList = ['summer', 'winter', 'rainy', 'spring-fall', 'all'];

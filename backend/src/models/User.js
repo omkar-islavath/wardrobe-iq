@@ -32,6 +32,11 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     defaultValue: ''
   },
+  gender: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'male'
+  },
   styleProfile: {
     type: DataTypes.JSONB,
     defaultValue: {

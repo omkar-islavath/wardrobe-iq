@@ -38,7 +38,6 @@ export const uploadClothingItem = async (req, res) => {
           folder: 'wardrobe_iq',
         });
         imageUrl = uploadResult.secure_url;
-        fs.unlinkSync(filePath);
       } catch (cloudinaryErr) {
         console.error("Cloudinary upload failed, falling back to local storage:", cloudinaryErr.message);
         imageUrl = `/uploads/${req.file.filename}`;
@@ -50,7 +49,7 @@ export const uploadClothingItem = async (req, res) => {
     // 2. Perform AI Analysis (Gemini Vision or mock fallback)
     let analysisResult;
     try {
-      analysisResult = await analyzeClothingImage(filePath, mimeType);
+      analysisResult = await analyzeClothingImage(filePath, mimeType, req.user.gender);
     } catch (aiErr) {
       console.error("AI Analysis failed:", aiErr.message);
       analysisResult = {
@@ -65,8 +64,8 @@ export const uploadClothingItem = async (req, res) => {
       };
     }
 
-    // Ensure local temp file is removed if uploaded to Cloudinary
-    if (process.env.CLOUDINARY_URL && fs.existsSync(filePath)) {
+    // Ensure local temp file is removed
+    if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 

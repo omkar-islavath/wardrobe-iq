@@ -267,12 +267,22 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
     }
   });
 
+  // Filter wardrobeItems based on user gender to ensure partitioned recommendations
+  let filteredWardrobeItems = wardrobeItems;
+  if (user && user.gender === 'male') {
+    const maleCategories = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
+    filteredWardrobeItems = wardrobeItems.filter(item => maleCategories.includes(item.category.toLowerCase()));
+  } else if (user && user.gender === 'female') {
+    const femaleCategories = ['top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree', 'shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
+    filteredWardrobeItems = wardrobeItems.filter(item => femaleCategories.includes(item.category.toLowerCase()));
+  }
+
   // 2. Separate wardrobe items by category
-  const tops = wardrobeItems.filter(item => ['shirt', 't-shirt', 'top', 'crop top', 'kurti'].includes(item.category));
-  const bottoms = wardrobeItems.filter(item => ['pants', 'jeans', 'shorts', 'skirt', 'leggings'].includes(item.category));
-  const shoes = wardrobeItems.filter(item => item.category === 'shoes');
-  const jackets = wardrobeItems.filter(item => item.category === 'jacket');
-  const onePieces = wardrobeItems.filter(item => ['dress', 'saree'].includes(item.category));
+  const tops = filteredWardrobeItems.filter(item => ['shirt', 't-shirt', 'top', 'crop top', 'kurti'].includes(item.category));
+  const bottoms = filteredWardrobeItems.filter(item => ['pants', 'jeans', 'shorts', 'skirt', 'leggings'].includes(item.category));
+  const shoes = filteredWardrobeItems.filter(item => item.category === 'shoes');
+  const jackets = filteredWardrobeItems.filter(item => item.category === 'jacket');
+  const onePieces = filteredWardrobeItems.filter(item => ['dress', 'saree'].includes(item.category));
 
   // Hybrid fallback: Seed simulated essentials if categories are missing,
   // enabling immediate styling layouts even with sparse wardrobes.

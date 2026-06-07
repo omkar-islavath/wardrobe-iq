@@ -24,7 +24,7 @@ function fileToGenerativePart(path, mimeType) {
 /**
  * 1. Analyze Clothing Image
  */
-export const analyzeClothingImage = async (imagePath, mimeType) => {
+export const analyzeClothingImage = async (imagePath, mimeType, gender = 'male') => {
   if (!genAI) {
     console.log("GEMINI_API_KEY not found. Running AI Clothing Analysis in MOCK mode.");
     return runMockClothingAnalysis(imagePath);
@@ -34,9 +34,13 @@ export const analyzeClothingImage = async (imagePath, mimeType) => {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const imagePart = fileToGenerativePart(imagePath, mimeType);
     
+    const allowedCategories = gender === 'female'
+      ? "top, crop top, kurti, skirt, leggings, dress, saree, shirt, t-shirt, pants, jeans, shorts, jacket, shoes, accessories"
+      : "shirt, t-shirt, pants, jeans, shorts, jacket, shoes, accessories";
+
     const prompt = `
       You are an expert fashion AI analyzer. Analyze this clothing item image and determine:
-      1. Category (must be one of: shirt, t-shirt, pants, jeans, shorts, jacket, shoes, accessories, top, crop top, kurti, skirt, leggings, dress, saree)
+      1. Category (must be one of: ${allowedCategories})
       2. Color (primary color, simple e.g. white, black, navy blue, red, olive, beige, grey, brown)
       3. Secondary Color (if any, e.g. white, none, red)
       4. Pattern (e.g. solid, striped, checked, printed, floral)

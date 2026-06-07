@@ -5,6 +5,7 @@ import { User, Settings, CheckCircle, Loader2 } from 'lucide-react';
 const SettingsPage = () => {
   const { user, updateStyleProfile } = useContext(AuthContext);
   const [name, setName] = useState(user?.name || '');
+  const [gender, setGender] = useState(user?.gender || 'male');
   const [preferredStyle, setPreferredStyle] = useState(user?.styleProfile?.preferredStyle || 'casual');
   const [favoriteOccasionWear, setFavoriteOccasionWear] = useState(user?.styleProfile?.favoriteOccasionWear || 'casual outing');
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,7 @@ const SettingsPage = () => {
         name,
         preferredStyle,
         favoriteOccasionWear,
+        gender,
       });
 
       if (res.success) {
@@ -60,15 +62,29 @@ const SettingsPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div>
-            <label className="block text-slate-400 mb-1.5">Profile Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-slate-400 mb-1.5">Profile Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-400 mb-1.5">Gender</label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs focus:ring-indigo-500 capitalize"
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

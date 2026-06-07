@@ -8,6 +8,7 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [gender, setGender] = useState('male');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +36,7 @@ const Register = () => {
     setError('');
     setSubmitting(true);
 
-    const result = await register(name, email, password);
+    const result = await register(name, email, password, gender);
     setSubmitting(false);
 
     if (result && !result.success) {
@@ -136,6 +137,36 @@ const Register = () => {
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                Gender Selection
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer bg-slate-900/40 border border-slate-800 px-4 py-3 rounded-2xl text-slate-300 w-full justify-center hover:bg-slate-900/80 transition select-none">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    checked={gender === 'male'}
+                    onChange={() => setGender('male')}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-700 bg-slate-900"
+                  />
+                  <span>Male</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer bg-slate-900/40 border border-slate-800 px-4 py-3 rounded-2xl text-slate-300 w-full justify-center hover:bg-slate-900/80 transition select-none">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    checked={gender === 'female'}
+                    onChange={() => setGender('female')}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-700 bg-slate-900"
+                  />
+                  <span>Female</span>
+                </label>
               </div>
             </div>
 

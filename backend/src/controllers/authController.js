@@ -14,7 +14,7 @@ const generateToken = (id) => {
  * @access  Public
  */
 export const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, gender } = req.body;
 
   try {
     const userExists = await User.findOne({ where: { email } });
@@ -27,6 +27,7 @@ export const registerUser = async (req, res) => {
       name,
       email,
       password,
+      gender: gender || 'male',
     });
 
     if (user) {
@@ -38,6 +39,7 @@ export const registerUser = async (req, res) => {
           name: user.name,
           email: user.email,
           profilePhoto: user.profilePhoto,
+          gender: user.gender,
           styleProfile: user.styleProfile,
         },
       });
@@ -70,6 +72,7 @@ export const loginUser = async (req, res) => {
           name: user.name,
           email: user.email,
           profilePhoto: user.profilePhoto,
+          gender: user.gender,
           styleProfile: user.styleProfile,
         },
       });
@@ -118,11 +121,16 @@ export const updateStyleProfile = async (req, res) => {
     const user = await User.findByPk(req.user.id);
 
     if (user) {
-      const { preferredColors, preferredStyle, favoriteOccasionWear, skinTone, faceShape, bodyType, styleInsights } = req.body;
+      const { preferredColors, preferredStyle, favoriteOccasionWear, skinTone, faceShape, bodyType, styleInsights, gender } = req.body;
       
       // Update name if present
       if (req.body.name !== undefined) {
         user.name = req.body.name;
+      }
+
+      // Update gender if present
+      if (gender !== undefined) {
+        user.gender = gender;
       }
 
       // Update style profile JSONB structure
