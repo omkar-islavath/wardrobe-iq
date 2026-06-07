@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
@@ -11,9 +11,6 @@ import wardrobeRoutes from './routes/wardrobeRoutes.js';
 import outfitRoutes from './routes/outfitRoutes.js';
 import selfieRoutes from './routes/selfieRoutes.js';
 import shoppingRoutes from './routes/shoppingRoutes.js';
-
-// Load env vars
-dotenv.config();
 
 // Connect to database
 connectDB();

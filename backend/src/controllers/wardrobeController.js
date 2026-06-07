@@ -23,6 +23,17 @@ export const uploadClothingItem = async (req, res) => {
     let imageUrl = '';
     if (process.env.CLOUDINARY_URL) {
       try {
+        const url = process.env.CLOUDINARY_URL;
+        const matches = url.match(/cloudinary:\/\/([^:]+):([^@]+)@([^?#]+)/);
+        if (matches) {
+          cloudinary.config({
+            api_key: matches[1],
+            api_secret: matches[2],
+            cloud_name: matches[3],
+            secure: true
+          });
+        }
+        
         const uploadResult = await cloudinary.uploader.upload(filePath, {
           folder: 'wardrobe_iq',
         });

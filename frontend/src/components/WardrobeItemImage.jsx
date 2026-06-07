@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const WardrobeItemImage = ({ src, category, color, className = '' }) => {
+const WardrobeItemImage = ({ src, category, color, className = '', showColor = false }) => {
   const [hasError, setHasError] = useState(false);
 
   // Normalize category
@@ -71,8 +71,8 @@ const WardrobeItemImage = ({ src, category, color, className = '' }) => {
     return (
       <div className={`flex flex-col items-center justify-center bg-gradient-to-br ${fallback.bg} relative ${className}`}>
         {fallback.icon}
-        {color && (
-          <span className="absolute bottom-1 text-[9px] font-bold text-white/80 bg-black/20 px-1.5 py-0.5 rounded-md capitalize">
+        {showColor && color && (
+          <span className="absolute bottom-2 text-[10px] font-bold text-white/90 bg-black/30 px-2 py-0.5 rounded-md capitalize">
             {color}
           </span>
         )}

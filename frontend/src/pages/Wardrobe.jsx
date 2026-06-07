@@ -267,6 +267,7 @@ const Wardrobe = () => {
                   src={getItemImage(item.imageUrl)}
                   category={item.category}
                   color={item.color}
+                  showColor={true}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -310,6 +311,7 @@ const Wardrobe = () => {
                 src={getItemImage(selectedItem.imageUrl)}
                 category={selectedItem.category}
                 color={selectedItem.color}
+                showColor={true}
                 className="w-full h-full object-cover"
               />
             </div>
