@@ -261,48 +261,8 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Side Panel: Style Profile & Recent History */}
+        {/* Side Panel: Recent History & Gaps */}
         <div className="space-y-6">
-          {/* Style Profile Summary */}
-          <div className="glass-card rounded-3xl p-6 space-y-4">
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              <User className="w-5 h-5 text-indigo-500" />
-              Style Profile Summary
-            </h3>
-            
-            {user?.styleProfile?.skinTone ? (
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Skin Tone:</span>
-                  <span className="font-semibold capitalize">{user.styleProfile.skinTone}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Face Shape:</span>
-                  <span className="font-semibold capitalize">{user.styleProfile.faceShape}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Preferred Colors:</span>
-                  <div className="flex gap-1">
-                    {(user.styleProfile.preferredColors || []).slice(0, 3).map((col, idx) => (
-                      <span key={idx} className="w-4 h-4 rounded-full border border-slate-400" style={{ backgroundColor: col }} title={col} />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed italic border-t border-slate-200 dark:border-slate-800 pt-3">
-                  "{user.styleProfile.styleInsights}"
-                </p>
-              </div>
-            ) : (
-              <div className="text-center py-4 space-y-3">
-                <p className="text-xs text-slate-400">
-                  Analyze your skin tone & face shape using AI selfie analysis for customized recommendations.
-                </p>
-                <Link to="/style-profile" className="inline-block text-xs font-bold text-indigo-500 hover:underline">
-                  Analyze Selfie Now
-                </Link>
-              </div>
-            )}
-          </div>
 
           {/* Gaps / Tips */}
           <div className="glass-card rounded-3xl p-6 space-y-4">

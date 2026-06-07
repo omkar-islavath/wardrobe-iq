@@ -13,7 +13,6 @@ import Wardrobe from './pages/Wardrobe';
 import UploadClothing from './pages/UploadClothing';
 import OutfitGenerator from './pages/OutfitGenerator';
 import OutfitHistory from './pages/OutfitHistory';
-import StyleProfile from './pages/StyleProfile';
 import ShoppingAssistant from './pages/ShoppingAssistant';
 import PackingAssistant from './pages/PackingAssistant';
 import Settings from './pages/Settings';
@@ -53,7 +52,6 @@ function App() {
             <Route path="/upload-clothing" element={<ProtectedRoute><UploadClothing /></ProtectedRoute>} />
             <Route path="/generate-outfits" element={<ProtectedRoute><OutfitGenerator /></ProtectedRoute>} />
             <Route path="/history" element={<ProtectedRoute><OutfitHistory /></ProtectedRoute>} />
-            <Route path="/style-profile" element={<ProtectedRoute><StyleProfile /></ProtectedRoute>} />
             <Route path="/shopping" element={<ProtectedRoute><ShoppingAssistant /></ProtectedRoute>} />
             <Route path="/packing" element={<ProtectedRoute><PackingAssistant /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

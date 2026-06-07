@@ -95,32 +95,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Upload and analyze selfie to update style profile
-  const analyzeUserSelfie = async (formData) => {
-    try {
-      const res = await api.post('/selfie/analyze', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      if (res.data.success) {
-        // Refresh profile data by updating state
-        setUser(prevUser => ({
-          ...prevUser,
-          styleProfile: res.data.styleProfile,
-          profilePhoto: res.data.profilePhoto || prevUser.profilePhoto
-        }));
-        return { success: true, styleProfile: res.data.styleProfile };
-      }
-    } catch (err) {
-      console.error(err);
-      return {
-        success: false,
-        error: err.response?.data?.error || 'Selfie analysis failed',
-      };
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -132,7 +106,6 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateStyleProfile,
-        analyzeUserSelfie,
       }}
     >
       {children}

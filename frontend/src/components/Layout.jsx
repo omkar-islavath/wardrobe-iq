@@ -31,7 +31,6 @@ const Layout = ({ children }) => {
     { name: 'Wardrobe', path: '/wardrobe', icon: Shirt },
     { name: 'Outfit Generator', path: '/generate-outfits', icon: Sparkles },
     { name: 'Outfit History', path: '/history', icon: Calendar },
-    { name: 'Style Profile', path: '/style-profile', icon: User },
     { name: 'Shopping Assistant', path: '/shopping', icon: ShoppingBag },
     { name: 'Packing Assistant', path: '/packing', icon: Luggage },
     { name: 'Settings', path: '/settings', icon: Settings },

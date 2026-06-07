@@ -9,7 +9,6 @@ import connectDB, { isDbConnected } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import wardrobeRoutes from './routes/wardrobeRoutes.js';
 import outfitRoutes from './routes/outfitRoutes.js';
-import selfieRoutes from './routes/selfieRoutes.js';
 import shoppingRoutes from './routes/shoppingRoutes.js';
 
 // Connect to database
@@ -51,7 +50,6 @@ app.use('/api', (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/wardrobe', wardrobeRoutes);
 app.use('/api/outfits', outfitRoutes);
-app.use('/api/selfie', selfieRoutes);
 app.use('/api/shopping', shoppingRoutes);
 
 // Health check endpoint

@@ -70,9 +70,9 @@ const LandingPage = () => {
               <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center text-indigo-400 mb-5">
                 <Camera className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-slate-100 mb-2">Facial Feature Recognition</h3>
+              <h3 className="text-lg font-bold text-slate-100 mb-2">AI Clothing Analysis</h3>
               <p className="text-sm text-slate-400 leading-relaxed">
-                Analyze your face shape and skin tone from a selfie to generate a custom style profile and color compatibility advice.
+                Upload photos of your clothing items and let Gemini AI automatically detect their category, color, season, and tags.
               </p>
             </div>
 

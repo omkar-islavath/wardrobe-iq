@@ -164,55 +164,6 @@ const runMockClothingAnalysis = (imagePath) => {
 };
 
 /**
- * 2. Analyze User Selfie for Style Profile
- */
-export const analyzeSelfie = async (imagePath, mimeType) => {
-  if (!genAI) {
-    console.log("GEMINI_API_KEY not found. Running Selfie Analysis in MOCK mode.");
-    return runMockSelfieAnalysis();
-  }
-
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const imagePart = fileToGenerativePart(imagePath, mimeType);
-
-    const prompt = `
-      You are an expert personal stylist. Analyze this user's face and skin tone to determine:
-      1. Skin Tone category (must be one of: warm, cool, neutral)
-      2. Face Shape (e.g. oval, round, square, heart, oblong)
-      3. Estimated Body Type (if visible, else state a general estimate like rectangular, athletic, pear, etc.)
-      4. Style Insights (a paragraph of fashion advice tailored to their features, e.g. what colors look best, what necklines fit their face shape).
-
-      Respond ONLY with a valid JSON object. Do not include any markdown formatting.
-      JSON structure:
-      {
-        "skinTone": "string",
-        "faceShape": "string",
-        "bodyType": "string",
-        "styleInsights": "string"
-      }
-    `;
-
-    const result = await model.generateContent([prompt, imagePart]);
-    const responseText = result.response.text().trim();
-    const cleanedJson = responseText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
-    return JSON.parse(cleanedJson);
-  } catch (error) {
-    console.error("Error in Gemini Selfie Analysis:", error);
-    return runMockSelfieAnalysis();
-  }
-};
-
-const runMockSelfieAnalysis = () => {
-  return {
-    skinTone: "warm",
-    faceShape: "oval",
-    bodyType: "athletic",
-    styleInsights: "With a warm skin tone, earth colors like olive, beige, brown, and warm rust will look exceptionally striking on you. Your oval face shape is highly versatile, meaning almost any neckline (from crew-neck to v-neck) and collar style suits you perfectly. Consider adding structured jackets to frame your athletic body type."
-  };
-};
-
-/**
  * 3. Wardrobe Gap Analysis
  */
 export const runWardrobeGapAnalysis = async (wardrobeItems) => {
