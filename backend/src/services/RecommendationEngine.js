@@ -55,65 +55,87 @@ const getOccasionScore = (occasion, itemCategories, itemStyles) => {
 
   switch (occasion) {
     case 'placement interview':
-      const hasTshirt = categories.includes('t-shirt');
-      const hasShorts = categories.includes('shorts');
-      const isAllFormal = styles.every(s => s === 'formal');
+      // Heavy penalties for completely inappropriate styles or categories
+      if (styles.includes('party') || styles.includes('traditional') || styles.includes('travel')) {
+        return 1;
+      }
+      if (categories.includes('t-shirt') || categories.includes('shorts') || categories.includes('crop top')) {
+        return 2;
+      }
       
-      if (hasTshirt || hasShorts) return 5;
+      const isAllFormal = styles.every(s => s === 'formal');
       if (isAllFormal) return 25;
-      if (styles.filter(s => s === 'formal').length >= 2) return 18;
-      return 10;
+      
+      const formalItemCount = styles.filter(s => s === 'formal').length;
+      if (formalItemCount >= 2) return 18;
+      if (formalItemCount >= 1) return 12;
+      return 6;
 
     case 'office':
-      if (categories.includes('shorts')) return 5;
-      const officeFormals = styles.filter(s => s === 'formal' || s === 'casual').length;
-      if (officeFormals === totalItemsCount(categories)) {
+      if (styles.includes('party') || styles.includes('traditional')) {
+        return 3;
+      }
+      if (categories.includes('shorts') || categories.includes('crop top')) {
+        return 2;
+      }
+      
+      const officeStyles = styles.filter(s => s === 'formal' || s === 'casual');
+      if (officeStyles.length === totalItemsCount(categories)) {
         const formalCount = styles.filter(s => s === 'formal').length;
         if (formalCount >= 1) return 25;
         return 20;
       }
-      return 12;
+      return 8;
 
     case 'college':
-      if (categories.includes('shorts')) return 22;
-      if (styles.includes('formal') && styles.includes('casual')) return 20;
-      if (styles.every(s => s === 'casual')) return 25;
-      return 15;
+      if (styles.includes('formal')) {
+        return 8; // Too dressed up/stiff for college
+      }
+      if (styles.includes('party')) {
+        return 12; // Too flashy for daily lectures
+      }
+      
+      const isCasualOrTravel = styles.every(s => s === 'casual' || s === 'travel');
+      if (isCasualOrTravel) return 25;
+      return 18;
 
     case 'date':
-      const dateStyleCount = styles.filter(s => s === 'casual' || s === 'party' || s === 'travel').length;
-      if (dateStyleCount === totalItemsCount(categories)) {
-        const hasShirt = categories.includes('shirt');
-        const hasShorts = categories.includes('shorts');
-        if (hasShirt && !hasShorts) return 25;
-        if (hasShorts) return 15;
-        return 20;
+      if (styles.includes('traditional')) {
+        return 12;
+      }
+      if (styles.includes('formal') && styles.includes('party')) {
+        return 22;
+      }
+      if (styles.includes('party') || styles.includes('casual')) {
+        return 25;
       }
       return 15;
 
     case 'wedding':
     case 'festival':
-      const tradCount = styles.filter(s => s === 'traditional').length;
-      if (tradCount >= 1) return 25;
-      if (styles.includes('formal')) return 18;
+      if (styles.includes('traditional')) return 25;
+      if (styles.includes('party')) return 20;
+      if (styles.includes('formal')) return 16;
+      if (categories.includes('shorts') || styles.includes('travel')) return 2;
       return 8;
 
     case 'party':
-      const hasPartyStyle = styles.includes('party');
-      if (hasPartyStyle) return 25;
-      if (styles.includes('casual')) return 20;
-      return 12;
+      if (styles.includes('party')) return 25;
+      if (styles.includes('casual')) return 18;
+      if (styles.includes('formal')) return 12;
+      return 10;
 
     case 'travel':
+      if (styles.includes('formal')) return 4; // Impractical for travel
       const travelComfort = styles.every(s => s === 'casual' || s === 'travel');
       if (travelComfort) return 25;
-      if (styles.includes('formal')) return 12;
-      return 20;
+      return 16;
 
     case 'casual outing':
     default:
+      if (styles.includes('formal')) return 8; // Too formal for casual hangout
       if (styles.every(s => s === 'casual' || s === 'travel')) return 25;
-      return 20;
+      return 18;
   }
 };
 
