@@ -1,16 +1,75 @@
 /**
  * Fetch current weather from OpenWeatherMap or simulate based on local season/coordinates
  */
-export const getWeather = async (lat, lon, city) => {
+export const getWeather = async (lat, lon, city, clientIp) => {
   const apiKey = process.env.WEATHER_API_KEY;
+
+  let cityName = city;
+  let simulatedLat = lat;
+  let simulatedLon = lon;
+
+  // Helper to check if IP is a public IP (skips loopbacks, private networks, and link-locals)
+  const isPublicIp = (ip) => {
+    if (!ip) return false;
+    let cleanIp = ip;
+    if (ip.startsWith('::ffff:')) {
+      cleanIp = ip.substring(7);
+    }
+    if (cleanIp === '127.0.0.1' || cleanIp === '::1' || cleanIp === 'localhost' || cleanIp === '::') {
+      return false;
+    }
+    const parts = cleanIp.split('.');
+    if (parts.length === 4) {
+      const p1 = parseInt(parts[0], 10);
+      const p2 = parseInt(parts[1], 10);
+      if (isNaN(p1) || isNaN(p2)) return false;
+      if (p1 === 10) return false;
+      if (p1 === 172 && p2 >= 16 && p2 <= 31) return false;
+      if (p1 === 192 && p2 === 168) return false;
+      if (p1 === 169 && p2 === 254) return false;
+      return true;
+    }
+    if (cleanIp.includes(':')) {
+      const lower = cleanIp.toLowerCase();
+      if (lower.startsWith('fe80:') || lower.startsWith('fc00:') || lower.startsWith('fd00:')) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  };
+
+  // If no city or coordinates are provided, attempt to geolocate using the client's public IP
+  if (!cityName && (!simulatedLat || !simulatedLon)) {
+    if (isPublicIp(clientIp)) {
+      try {
+        const ipResponse = await fetch(`http://ip-api.com/json/${clientIp}`);
+        if (ipResponse.ok) {
+          const ipData = await ipResponse.json();
+          if (ipData && ipData.status === 'success' && ipData.city) {
+            cityName = ipData.city;
+            if (cityName.toLowerCase() === 'bangalore' || cityName.toLowerCase() === 'bengaluru') {
+              cityName = 'Hyderabad';
+            }
+            simulatedLat = ipData.lat;
+            simulatedLon = ipData.lon;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not determine location from client IP, falling back to default:", err.message);
+      }
+    }
+  }
+
+  if (!cityName) cityName = 'Hyderabad';
 
   if (apiKey) {
     try {
       let url = `https://api.openweathermap.org/data/2.5/weather?appid=${apiKey}&units=metric`;
-      if (city) {
-        url += `&q=${encodeURIComponent(city)}`;
-      } else if (lat && lon) {
-        url += `&lat=${lat}&lon=${lon}`;
+      if (cityName) {
+        url += `&q=${encodeURIComponent(cityName)}`;
+      } else if (simulatedLat && simulatedLon) {
+        url += `&lat=${simulatedLat}&lon=${simulatedLon}`;
       } else {
         url += `&q=Hyderabad`; // default city
       }
@@ -36,31 +95,6 @@ export const getWeather = async (lat, lon, city) => {
       console.error("Error fetching weather from API, falling back to simulation:", error.message);
     }
   }
-
-  let cityName = city;
-  let simulatedLat = lat;
-  let simulatedLon = lon;
-
-  if (!city && (!lat || !lon)) {
-    try {
-      const ipResponse = await fetch('http://ip-api.com/json');
-      if (ipResponse.ok) {
-        const ipData = await ipResponse.json();
-        if (ipData && ipData.status === 'success' && ipData.city) {
-          cityName = ipData.city;
-          if (cityName.toLowerCase() === 'bangalore' || cityName.toLowerCase() === 'bengaluru') {
-            cityName = 'Hyderabad';
-          }
-          simulatedLat = ipData.lat;
-          simulatedLon = ipData.lon;
-        }
-      }
-    } catch (err) {
-      console.warn("Could not determine location from IP, falling back to default:", err.message);
-    }
-  }
-
-  if (!cityName) cityName = 'Hyderabad';
 
   // Seeded random helper to ensure consistency on the same day for the same city
   const getSeededRandom = (seedStr) => {

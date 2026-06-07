@@ -20,6 +20,9 @@ connectDB();
 
 const app = express();
 
+// Enable trust proxy to retrieve client IP from X-Forwarded-For headers
+app.set('trust proxy', true);
+
 // Enable CORS
 app.use(cors());
 

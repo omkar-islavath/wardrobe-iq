@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import WardrobeItemImage from '../components/WardrobeItemImage';
 import {
   Calendar,
   Heart,
@@ -150,12 +151,12 @@ const OutfitHistory = () => {
                   {/* Images row */}
                   <div className="flex gap-2">
                     {item.outfitItems.map((garment, idx) => (
-                      <img
+                      <WardrobeItemImage
                         key={idx}
                         src={getItemImage(garment.imageUrl)}
-                        alt={garment.category}
+                        category={garment.category}
+                        color={garment.color}
                         className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-800/80 shadow-sm"
-                        title={`${garment.color} ${garment.category}`}
                       />
                     ))}
                   </div>
@@ -238,12 +239,12 @@ const OutfitHistory = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex -space-x-2">
                         {item.outfitItems.map((garment, idx) => (
-                          <img
+                          <WardrobeItemImage
                             key={idx}
                             src={getItemImage(garment.imageUrl)}
-                            alt={garment.category}
+                            category={garment.category}
+                            color={garment.color}
                             className="w-10 h-10 rounded-lg object-cover border-2 border-white dark:border-slate-950 shadow-sm"
-                            title={`${garment.color} ${garment.category}`}
                           />
                         ))}
                       </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
+import WardrobeItemImage from '../components/WardrobeItemImage';
 import {
   CloudSun,
   Shirt,
@@ -227,12 +228,12 @@ const Dashboard = () => {
 
                     <div className="flex gap-2 my-4 justify-center">
                       {rec.outfitItems.map((item, itemIdx) => (
-                        <img
+                        <WardrobeItemImage
                           key={itemIdx}
                           src={getItemImage(item.imageUrl)}
-                          alt={item.category}
+                          category={item.category}
+                          color={item.color}
                           className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-800"
-                          title={`${item.color} ${item.category}`}
                         />
                       ))}
                     </div>

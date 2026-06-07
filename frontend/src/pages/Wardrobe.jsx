@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import WardrobeItemImage from '../components/WardrobeItemImage';
 import {
   Search,
   Filter,
@@ -262,9 +263,10 @@ const Wardrobe = () => {
               className="glass-card rounded-2xl overflow-hidden cursor-pointer flex flex-col h-full"
             >
               <div className="aspect-square relative overflow-hidden bg-slate-100 dark:bg-slate-900">
-                <img
+                <WardrobeItemImage
                   src={getItemImage(item.imageUrl)}
-                  alt={item.category}
+                  category={item.category}
+                  color={item.color}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -304,9 +306,10 @@ const Wardrobe = () => {
 
             {/* Left: Image */}
             <div className="md:w-1/2 bg-slate-900/30 flex items-center justify-center aspect-square md:aspect-auto">
-              <img
+              <WardrobeItemImage
                 src={getItemImage(selectedItem.imageUrl)}
-                alt={selectedItem.category}
+                category={selectedItem.category}
+                color={selectedItem.color}
                 className="w-full h-full object-cover"
               />
             </div>

@@ -113,7 +113,8 @@ export const generateOutfits = async (req, res) => {
 
   try {
     // 1. Fetch user's weather conditions
-    const weather = await getWeather(lat, lon, city);
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress;
+    const weather = await getWeather(lat, lon, city, clientIp);
 
     // 2. Fetch all user wardrobe items using Sequelize ordered by ID
     const wardrobeItems = await WardrobeItem.findAll({

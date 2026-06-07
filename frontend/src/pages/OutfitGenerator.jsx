@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
+import WardrobeItemImage from '../components/WardrobeItemImage';
 import { AuthContext } from '../context/AuthContext';
 import {
   Sparkles,
@@ -250,9 +251,10 @@ const OutfitGenerator = () => {
               <div className="p-6 bg-slate-500/3 flex gap-3 overflow-x-auto">
                 {rec.outfitItems.map((item, itemIdx) => (
                   <div key={itemIdx} className="shrink-0 w-20 text-center space-y-1">
-                    <img
+                    <WardrobeItemImage
                       src={getItemImage(item.imageUrl)}
-                      alt={item.category}
+                      category={item.category}
+                      color={item.color}
                       className="w-20 h-20 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shadow-sm"
                     />
                     <p className="text-[10px] font-bold capitalize truncate leading-none mt-1">{item.color} {item.category}</p>
