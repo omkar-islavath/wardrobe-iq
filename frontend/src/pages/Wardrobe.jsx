@@ -40,7 +40,7 @@ const Wardrobe = () => {
     tags: '',
   });
 
-  const categoriesList = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
+  const categoriesList = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories', 'top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree'];
   const colorsList = ['white', 'black', 'grey', 'navy blue', 'blue', 'olive', 'beige', 'brown', 'red', 'yellow', 'pink'];
   const stylesList = ['casual', 'formal', 'party', 'traditional', 'travel'];
   const seasonsList = ['summer', 'winter', 'rainy', 'spring-fall', 'all'];

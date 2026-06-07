@@ -246,14 +246,15 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
   });
 
   // 2. Separate wardrobe items by category
-  const tops = wardrobeItems.filter(item => ['shirt', 't-shirt'].includes(item.category));
-  const bottoms = wardrobeItems.filter(item => ['pants', 'jeans', 'shorts'].includes(item.category));
+  const tops = wardrobeItems.filter(item => ['shirt', 't-shirt', 'top', 'crop top', 'kurti'].includes(item.category));
+  const bottoms = wardrobeItems.filter(item => ['pants', 'jeans', 'shorts', 'skirt', 'leggings'].includes(item.category));
   const shoes = wardrobeItems.filter(item => item.category === 'shoes');
   const jackets = wardrobeItems.filter(item => item.category === 'jacket');
+  const onePieces = wardrobeItems.filter(item => ['dress', 'saree'].includes(item.category));
 
   // Hybrid fallback: Seed simulated essentials if categories are missing,
   // enabling immediate styling layouts even with sparse wardrobes.
-  if (tops.length === 0) {
+  if (tops.length === 0 && onePieces.length === 0) {
     tops.push({
       id: 'simulated-top',
       category: 'shirt',
@@ -268,7 +269,7 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
     });
   }
 
-  if (bottoms.length === 0) {
+  if (bottoms.length === 0 && onePieces.length === 0) {
     bottoms.push({
       id: 'simulated-bottom',
       category: 'jeans',
@@ -300,7 +301,7 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
 
   const combinations = [];
 
-  // Helper to push combinations
+  // Helper to push standard combinations (Top + Bottom + Shoe + Jacket)
   const addCombination = (top, bottom, shoe, jacket = null) => {
     const items = [top, bottom, shoe];
     if (jacket) items.push(jacket);
@@ -340,15 +341,71 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
     });
   };
 
+  // Helper to push one-piece combinations (Dress/Saree + Shoe + Jacket)
+  const addOnePieceCombination = (onePiece, shoe, jacket = null) => {
+    const items = [onePiece, shoe];
+    if (jacket) items.push(jacket);
+
+    // One-piece color compatibility: match its own color with itself (top/bottom same color)
+    const colorScore = getColorCompatibilityScore(onePiece.color, onePiece.color, shoe.color, jacket?.color);
+    
+    const categories = items.map(i => i.category);
+    const styles = items.map(i => i.style);
+    const occasionScore = getOccasionScore(occasion, categories, styles);
+    
+    const weatherScore = getWeatherScore(weather, items);
+    const preferenceScore = getUserPreferenceScore(user.styleProfile, items);
+    const freshnessScore = getFreshnessScore(recentWornItemIds, items);
+
+    const totalScore = colorScore + occasionScore + weatherScore + preferenceScore + freshnessScore;
+
+    const mappedItems = items.map(i => {
+      const itemData = (typeof i.toJSON === 'function') ? i.toJSON() : i;
+      return {
+        ...itemData,
+        _id: i.id
+      };
+    });
+
+    combinations.push({
+      outfitItems: mappedItems,
+      score: Math.round(totalScore),
+      scoreBreakdown: {
+        colorCompatibility: Math.round(colorScore),
+        occasionMatch: Math.round(occasionScore),
+        weatherMatch: Math.round(weatherScore),
+        userPreferenceMatch: Math.round(preferenceScore),
+        freshness: Math.round(freshnessScore)
+      }
+    });
+  };
+
   // Generate combos: Top + Bottom + Shoe
-  for (const top of tops) {
-    for (const bottom of bottoms) {
+  if (tops.length > 0 && bottoms.length > 0) {
+    for (const top of tops) {
+      for (const bottom of bottoms) {
+        for (const shoe of shoes) {
+          addCombination(top, bottom, shoe);
+
+          if (jackets.length > 0 && (!weather || weather.temp <= 28)) {
+            for (const jacket of jackets) {
+              addCombination(top, bottom, shoe, jacket);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Generate combos: One-Piece + Shoe
+  if (onePieces.length > 0) {
+    for (const onePiece of onePieces) {
       for (const shoe of shoes) {
-        addCombination(top, bottom, shoe);
+        addOnePieceCombination(onePiece, shoe);
 
         if (jackets.length > 0 && (!weather || weather.temp <= 28)) {
           for (const jacket of jackets) {
-            addCombination(top, bottom, shoe, jacket);
+            addOnePieceCombination(onePiece, shoe, jacket);
           }
         }
       }

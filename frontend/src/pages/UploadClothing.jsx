@@ -88,7 +88,7 @@ const UploadClothing = () => {
     return `${API_URL.replace('/api', '')}${url}`;
   };
 
-  const categoriesList = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
+  const categoriesList = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories', 'top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree'];
   const stylesList = ['casual', 'formal', 'party', 'traditional', 'travel'];
   const seasonsList = ['summer', 'winter', 'rainy', 'spring-fall', 'all'];
 

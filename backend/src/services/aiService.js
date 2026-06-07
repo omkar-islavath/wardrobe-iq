@@ -36,7 +36,7 @@ export const analyzeClothingImage = async (imagePath, mimeType) => {
     
     const prompt = `
       You are an expert fashion AI analyzer. Analyze this clothing item image and determine:
-      1. Category (must be one of: shirt, t-shirt, pants, jeans, shorts, jacket, shoes, accessories)
+      1. Category (must be one of: shirt, t-shirt, pants, jeans, shorts, jacket, shoes, accessories, top, crop top, kurti, skirt, leggings, dress, saree)
       2. Color (primary color, simple e.g. white, black, navy blue, red, olive, beige, grey, brown)
       3. Secondary Color (if any, e.g. white, none, red)
       4. Pattern (e.g. solid, striped, checked, printed, floral)
@@ -86,7 +86,39 @@ const runMockClothingAnalysis = (imagePath) => {
   let brand = "StyleCorp";
   let tags = ["essential", "cotton"];
 
-  if (lowercasePath.includes("pant") || lowercasePath.includes("trouser")) {
+  if (lowercasePath.includes("dress") || lowercasePath.includes("gown") || lowercasePath.includes("onepiece")) {
+    category = "dress";
+    color = "black";
+    style = "party";
+    tags = ["one-piece", "feminine", "elegant"];
+  } else if (lowercasePath.includes("saree") || lowercasePath.includes("sari")) {
+    category = "saree";
+    color = "red";
+    style = "traditional";
+    tags = ["traditional", "ethnic", "indian"];
+  } else if (lowercasePath.includes("skirt")) {
+    category = "skirt";
+    color = "pink";
+    tags = ["skirt", "feminine", "casual"];
+  } else if (lowercasePath.includes("kurti") || lowercasePath.includes("kurtas")) {
+    category = "kurti";
+    color = "yellow";
+    style = "traditional";
+    tags = ["traditional", "kurti", "ethnic"];
+  } else if (lowercasePath.includes("crop top") || lowercasePath.includes("croptop")) {
+    category = "crop top";
+    color = "white";
+    season = "summer";
+    tags = ["modern", "crop-top", "summer"];
+  } else if (lowercasePath.includes("legging") || lowercasePath.includes("leggings")) {
+    category = "leggings";
+    color = "black";
+    tags = ["stretch", "leggings", "comfy"];
+  } else if (lowercasePath.includes("top")) {
+    category = "top";
+    color = "white";
+    tags = ["casual", "top", "essential"];
+  } else if (lowercasePath.includes("pant") || lowercasePath.includes("trouser")) {
     category = "pants";
     color = "black";
     style = "formal";

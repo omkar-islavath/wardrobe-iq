@@ -11,6 +11,9 @@ const WardrobeItemImage = ({ src, category, color, className = '', showColor = f
     switch (cat) {
       case 'shirt':
       case 't-shirt':
+      case 'top':
+      case 'crop top':
+      case 'kurti':
         return {
           bg: 'from-indigo-600 to-purple-600',
           icon: (
@@ -22,11 +25,23 @@ const WardrobeItemImage = ({ src, category, color, className = '', showColor = f
       case 'pants':
       case 'jeans':
       case 'shorts':
+      case 'skirt':
+      case 'leggings':
         return {
           bg: 'from-emerald-600 to-teal-600',
           icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-1/2 h-1/2 text-white/95">
               <path d="M6 2h12v3l3 1v16h-6v-8h-2v8H3V6l3-1z" />
+            </svg>
+          )
+        };
+      case 'dress':
+      case 'saree':
+        return {
+          bg: 'from-fuchsia-600 to-pink-600',
+          icon: (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-1/2 h-1/2 text-white/95">
+              <path d="M19 4h-3.5L12 8 8.5 4H5v3l3 2v11h8V9l3-2z" />
             </svg>
           )
         };

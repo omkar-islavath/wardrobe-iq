@@ -483,31 +483,31 @@ const brandConfigs = {
     maxPrice: 4499
   },
   "Mast & Harbour": {
-    categories: ["shirt", "t-shirt", "pants", "shorts", "accessories"],
-    styles: ["casual", "party"],
+    categories: ["shirt", "t-shirt", "pants", "shorts", "accessories", "top", "crop top", "skirt", "dress", "kurti"],
+    styles: ["casual", "party", "traditional"],
     minPrice: 599,
     maxPrice: 1899
   },
   "Adidas": {
-    categories: ["t-shirt", "pants", "shorts", "jacket", "shoes", "accessories"],
+    categories: ["t-shirt", "pants", "shorts", "jacket", "shoes", "accessories", "leggings"],
     styles: ["sports", "casual"],
     minPrice: 999,
     maxPrice: 4999
   },
   "Nike": {
-    categories: ["t-shirt", "pants", "shorts", "jacket", "shoes", "accessories"],
+    categories: ["t-shirt", "pants", "shorts", "jacket", "shoes", "accessories", "leggings"],
     styles: ["sports", "casual"],
     minPrice: 999,
     maxPrice: 5499
   },
   "Zara": {
-    categories: ["shirt", "t-shirt", "pants", "jeans", "jacket", "shoes", "accessories"],
+    categories: ["shirt", "t-shirt", "pants", "jeans", "jacket", "shoes", "accessories", "dress", "skirt", "top", "crop top"],
     styles: ["party", "casual", "formal"],
     minPrice: 1499,
     maxPrice: 5999
   },
   "H&M": {
-    categories: ["shirt", "t-shirt", "pants", "jeans", "shorts", "jacket", "accessories"],
+    categories: ["shirt", "t-shirt", "pants", "jeans", "shorts", "jacket", "accessories", "dress", "skirt", "top", "crop top", "leggings"],
     styles: ["casual", "party"],
     minPrice: 599,
     maxPrice: 2999
@@ -568,6 +568,48 @@ const categoryDetails = {
     colors: ["brown", "black", "grey"],
     patterns: ["solid", "textured"],
     seasons: ["all"]
+  },
+  top: {
+    adjectives: ["Floral Print Casual", "Lace Detail Elegant", "Ribbed Knit Modern", "Peplum Stylish"],
+    colors: ["white", "black", "pink", "yellow", "blue", "red"],
+    patterns: ["solid", "printed", "floral"],
+    seasons: ["summer", "spring-fall", "all"]
+  },
+  "crop top": {
+    adjectives: ["Ribbed Casual", "Graphic Printed", "Ruched Stylish", "Sleeveless Summer"],
+    colors: ["black", "white", "pink", "yellow", "grey"],
+    patterns: ["solid", "printed", "striped"],
+    seasons: ["summer"]
+  },
+  kurti: {
+    adjectives: ["Anarkali Traditional", "A-Line Floral", "Straight Cotton", "Printed Festive"],
+    colors: ["red", "yellow", "blue", "pink", "green", "white"],
+    patterns: ["printed", "solid", "floral"],
+    seasons: ["summer", "spring-fall", "all"]
+  },
+  skirt: {
+    adjectives: ["Pleated A-Line", "Floral Maxi", "Denim Casual", "Pencil Formal"],
+    colors: ["black", "blue", "pink", "white", "beige"],
+    patterns: ["solid", "printed", "floral"],
+    seasons: ["summer", "spring-fall", "all"]
+  },
+  leggings: {
+    adjectives: ["Stretch Sports", "Soft Cotton", "Ankle-Length Daily"],
+    colors: ["black", "navy blue", "grey", "white"],
+    patterns: ["solid"],
+    seasons: ["all"]
+  },
+  dress: {
+    adjectives: ["A-Line Summer", "Bodycon Party", "Maxi Floral", "Formal Shift"],
+    colors: ["black", "red", "pink", "blue", "green", "yellow"],
+    patterns: ["solid", "printed", "floral"],
+    seasons: ["summer", "spring-fall", "all"]
+  },
+  saree: {
+    adjectives: ["Silk Traditional", "Georgette Party", "Cotton Handloom", "Organza Designer"],
+    colors: ["red", "yellow", "green", "pink", "blue", "black"],
+    patterns: ["solid", "printed", "textured"],
+    seasons: ["all"]
   }
 };
 
@@ -615,6 +657,33 @@ const categoryImages = {
   accessories: [
     "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=500&q=80",
     "https://images.unsplash.com/photo-1624222247344-550fb805296f?w=500&q=80"
+  ],
+  top: [
+    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&q=80",
+    "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=500&q=80"
+  ],
+  "crop top": [
+    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&q=80",
+    "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=500&q=80"
+  ],
+  kurti: [
+    "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&q=80",
+    "https://images.unsplash.com/photo-1608748010899-18f300247112?w=500&q=80"
+  ],
+  skirt: [
+    "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500&q=80",
+    "https://images.unsplash.com/photo-1577900272786-39877020dd2a?w=500&q=80"
+  ],
+  leggings: [
+    "https://images.unsplash.com/photo-1506152983158-b4a74a01c721?w=500&q=80"
+  ],
+  dress: [
+    "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80",
+    "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=500&q=80"
+  ],
+  saree: [
+    "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&q=80",
+    "https://images.unsplash.com/photo-1608748010899-18f300247112?w=500&q=80"
   ]
 };
 

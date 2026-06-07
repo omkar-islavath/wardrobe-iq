@@ -8,7 +8,7 @@ const WardrobeItem = sequelize.define('WardrobeItem', {
     allowNull: false,
     validate: {
       isIn: {
-        args: [['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories']],
+        args: [['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories', 'top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree']],
         msg: 'Please select a valid category'
       }
     }
