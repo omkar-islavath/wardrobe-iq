@@ -10,6 +10,20 @@ if (apiKey) {
 }
 
 /**
+ * Helper to get generative model with request options (like custom proxy base URL)
+ */
+const getModelWithOptions = (modelName) => {
+  if (!genAI) return null;
+  const options = { model: modelName };
+  const requestOptions = {};
+  if (process.env.GEMINI_BASE_URL) {
+    requestOptions.baseUrl = process.env.GEMINI_BASE_URL;
+  }
+  return genAI.getGenerativeModel(options, requestOptions);
+};
+
+
+/**
  * Convert local file to Generative AI inline data structure
  */
 function fileToGenerativePart(path, mimeType) {
@@ -31,7 +45,7 @@ export const analyzeClothingImage = async (imagePath, mimeType, gender = 'male')
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getModelWithOptions("gemini-2.5-flash");
     const imagePart = fileToGenerativePart(imagePath, mimeType);
     
     const allowedCategories = gender === 'female'
@@ -176,7 +190,7 @@ export const runWardrobeGapAnalysis = async (wardrobeItems) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getModelWithOptions("gemini-2.5-flash");
     const prompt = `
       You are a fashion intelligence advisor. I will provide a list of clothing items in a user's wardrobe.
       Analyze the list and identify:
@@ -286,7 +300,7 @@ export const getShoppingSuggestions = async (wardrobeItems, query, filters) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getModelWithOptions("gemini-2.5-flash");
     const prompt = `
       You are a personalized AI shopping assistant. Based on the user's current wardrobe items, recommend 3 specific clothing items that would match their current clothes.
       The user's query is: "${query}"
