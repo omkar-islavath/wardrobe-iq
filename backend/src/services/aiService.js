@@ -55,18 +55,20 @@ export const analyzeClothingImage = async (imagePath, mimeType, gender = 'male')
     const prompt = `
       You are an expert fashion AI analyzer. Analyze this clothing item image and determine:
       1. Category (must be one of: ${allowedCategories})
-      2. Color (primary color, simple e.g. white, black, navy blue, red, olive, beige, grey, brown)
-      3. Secondary Color (if any, e.g. white, none, red)
-      4. Pattern (e.g. solid, striped, checked, printed, floral)
-      5. Style (e.g. casual, formal, party, traditional, travel)
-      6. Recommended Season (must be one of: summer, winter, rainy, spring-fall, all)
-      7. Suggested Brand (if visible, else leave empty)
-      8. Suggested Tags (array of strings, e.g. ["cotton", "denim", "button-down", "slim-fit"])
+      2. Target Gender (must be one of: men, women, unisex)
+      3. Color (primary color, simple e.g. white, black, navy blue, red, olive, beige, grey, brown)
+      4. Secondary Color (if any, e.g. white, none, red)
+      5. Pattern (e.g. solid, striped, checked, printed, floral)
+      6. Style (e.g. casual, formal, party, traditional, travel)
+      7. Recommended Season (must be one of: summer, winter, rainy, spring-fall, all)
+      8. Suggested Brand (if visible, else leave empty)
+      9. Suggested Tags (array of strings, e.g. ["cotton", "denim", "button-down", "slim-fit"])
 
       Respond ONLY with a valid JSON object. Do not include any markdown formatting or extra text.
       JSON structure:
       {
         "category": "string",
+        "gender": "string",
         "color": "string",
         "secondaryColor": "string",
         "pattern": "string",
@@ -169,8 +171,17 @@ const runMockClothingAnalysis = (imagePath) => {
     tags = ["leather", "classic", "styling"];
   }
 
+  const femaleOnlyCategories = ['top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree'];
+  let mockGender = 'men';
+  if (femaleOnlyCategories.includes(category)) {
+    mockGender = 'women';
+  } else if (category === 'accessories') {
+    mockGender = 'unisex';
+  }
+
   return {
     category,
+    gender: mockGender,
     color,
     secondaryColor,
     pattern,
@@ -337,10 +348,21 @@ export const getShoppingSuggestions = async (wardrobeItems, query, filters) => {
     const cleanedJson = responseText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
     const suggestions = JSON.parse(cleanedJson);
     
-    return suggestions.map(prod => {
+    return suggestions.map((prod, idx) => {
       const searchTerms = `${prod.brand || ''} ${prod.name || ''}`.trim();
       const formattedTerms = searchTerms.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      const purchaseLink = `https://www.myntra.com/${formattedTerms}?rawQuery=${encodeURIComponent(searchTerms)}`;
+      
+      const platforms = ['myntra', 'ajio', 'amazon'];
+      const platform = platforms[(idx + (prod.name ? prod.name.length : 0)) % platforms.length];
+      let purchaseLink;
+      if (platform === 'ajio') {
+        purchaseLink = `https://www.ajio.com/search/?text=${encodeURIComponent(searchTerms)}`;
+      } else if (platform === 'amazon') {
+        purchaseLink = `https://www.amazon.in/s?k=${encodeURIComponent(searchTerms)}`;
+      } else {
+        purchaseLink = `https://www.myntra.com/${formattedTerms}?rawQuery=${encodeURIComponent(searchTerms)}`;
+      }
+
       return {
         ...prod,
         purchaseLink
@@ -575,7 +597,17 @@ const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
 
     const searchTerms = `${item.brand} ${item.name}`;
     const formattedTerms = searchTerms.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    const purchaseLink = `https://www.myntra.com/${formattedTerms}?rawQuery=${encodeURIComponent(searchTerms)}`;
+    
+    const platforms = ['myntra', 'ajio', 'amazon'];
+    const platform = platforms[(item.brand.length + item.price) % platforms.length];
+    let purchaseLink;
+    if (platform === 'ajio') {
+      purchaseLink = `https://www.ajio.com/search/?text=${encodeURIComponent(searchTerms)}`;
+    } else if (platform === 'amazon') {
+      purchaseLink = `https://www.amazon.in/s?k=${encodeURIComponent(searchTerms)}`;
+    } else {
+      purchaseLink = `https://www.myntra.com/${formattedTerms}?rawQuery=${encodeURIComponent(searchTerms)}`;
+    }
 
     return {
       name: item.name,

@@ -177,18 +177,9 @@ const ShoppingAssistant = () => {
                     className="w-full rounded-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs focus:ring-indigo-500"
                   >
                     <option value="">Any</option>
-                    <option value="Roadster">Roadster</option>
-                    <option value="Wrogn">Wrogn</option>
-                    <option value="HRX">HRX</option>
-                    <option value="Puma">Puma</option>
-                    <option value="Bata">Bata</option>
-                    <option value="Louis Philippe">Louis Philippe</option>
-                    <option value="Mast & Harbour">Mast & Harbour</option>
-                    <option value="Adidas">Adidas</option>
-                    <option value="Nike">Nike</option>
-                    <option value="Zara">Zara</option>
-                    <option value="H&M">H&M</option>
-                    <option value="Levi's">Levi's</option>
+                    {['Roadster', 'Wrogn', 'HRX', 'Puma', 'Bata', 'Louis Philippe', 'Mast & Harbour', 'Adidas', 'Nike', 'Zara', 'H&M', 'Levi\'s', 'Biba', 'W', 'Only', 'Vero Moda', 'Allen Solly', 'Van Heusen', 'Tommy Hilfiger', 'Others'].map(b => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
                   </select>
                 </div>
               </div>

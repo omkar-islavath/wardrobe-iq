@@ -271,10 +271,16 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
   let filteredWardrobeItems = wardrobeItems;
   if (user && user.gender === 'male') {
     const maleCategories = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
-    filteredWardrobeItems = wardrobeItems.filter(item => maleCategories.includes(item.category.toLowerCase()));
+    filteredWardrobeItems = wardrobeItems.filter(item => 
+      maleCategories.includes(item.category.toLowerCase()) && 
+      item.gender !== 'women'
+    );
   } else if (user && user.gender === 'female') {
     const femaleCategories = ['top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree', 'shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
-    filteredWardrobeItems = wardrobeItems.filter(item => femaleCategories.includes(item.category.toLowerCase()));
+    filteredWardrobeItems = wardrobeItems.filter(item => 
+      femaleCategories.includes(item.category.toLowerCase()) && 
+      item.gender !== 'men'
+    );
   }
 
   // 2. Separate wardrobe items by category

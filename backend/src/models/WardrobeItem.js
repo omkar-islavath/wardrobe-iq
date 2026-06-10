@@ -50,6 +50,17 @@ const WardrobeItem = sequelize.define('WardrobeItem', {
   tags: {
     type: DataTypes.JSONB,
     defaultValue: []
+  },
+  gender: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'unisex',
+    validate: {
+      isIn: {
+        args: [['men', 'women', 'unisex']],
+        msg: 'Please select a valid target gender'
+      }
+    }
   }
 });
 

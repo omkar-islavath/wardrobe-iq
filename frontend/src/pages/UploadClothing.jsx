@@ -95,6 +95,7 @@ const UploadClothing = () => {
   const categoriesList = user?.gender === 'female' ? femaleCategories : maleCategories;
   const stylesList = ['casual', 'formal', 'party', 'traditional', 'travel'];
   const seasonsList = ['summer', 'winter', 'rainy', 'spring-fall', 'all'];
+  const brandsList = ['Roadster', 'Wrogn', 'HRX', 'Puma', 'Bata', 'Louis Philippe', 'Mast & Harbour', 'Adidas', 'Nike', 'Zara', 'H&M', 'Levi\'s', 'Biba', 'W', 'Only', 'Vero Moda', 'Allen Solly', 'Van Heusen', 'Tommy Hilfiger', 'Others'];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -245,35 +246,23 @@ const UploadClothing = () => {
                   <div>
                     <label className="block text-slate-400 mb-1">Brand</label>
                     <select
-                      value={analyzedItem.brand || 'Generic'}
+                      value={analyzedItem.brand || 'Others'}
                       onChange={(e) => setAnalyzedItem({ ...analyzedItem, brand: e.target.value })}
                       className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs focus:ring-indigo-500"
                       required
                     >
-                      <option value="Generic">Generic</option>
-                      <option value="Roadster">Roadster</option>
-                      <option value="Wrogn">Wrogn</option>
-                      <option value="HRX">HRX</option>
-                      <option value="Puma">Puma</option>
-                      <option value="Bata">Bata</option>
-                      <option value="Louis Philippe">Louis Philippe</option>
-                      <option value="Mast & Harbour">Mast & Harbour</option>
-                      <option value="Adidas">Adidas</option>
-                      <option value="Nike">Nike</option>
-                      <option value="Zara">Zara</option>
-                      <option value="H&M">H&M</option>
-                      <option value="Levi's">Levi's</option>
+                      {brandsList.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-slate-400 mb-1">Style</label>
                     <select
                       value={analyzedItem.style}
                       onChange={(e) => setAnalyzedItem({ ...analyzedItem, style: e.target.value })}
-                      className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs focus:ring-indigo-500"
+                      className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs focus:ring-indigo-500 capitalize"
                     >
                       {stylesList.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -283,9 +272,21 @@ const UploadClothing = () => {
                     <select
                       value={analyzedItem.season}
                       onChange={(e) => setAnalyzedItem({ ...analyzedItem, season: e.target.value })}
-                      className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs focus:ring-indigo-500"
+                      className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs focus:ring-indigo-500 capitalize"
                     >
                       {seasonsList.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1">Target Gender</label>
+                    <select
+                      value={analyzedItem.gender || 'unisex'}
+                      onChange={(e) => setAnalyzedItem({ ...analyzedItem, gender: e.target.value })}
+                      className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs focus:ring-indigo-500 capitalize"
+                    >
+                      <option value="unisex">Unisex</option>
+                      <option value="men">Men</option>
+                      <option value="women">Women</option>
                     </select>
                   </div>
                 </div>

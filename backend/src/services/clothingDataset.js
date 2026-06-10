@@ -517,6 +517,54 @@ const brandConfigs = {
     styles: ["casual"],
     minPrice: 999,
     maxPrice: 3999
+  },
+  "Biba": {
+    categories: ["kurti", "saree", "dress", "skirt"],
+    styles: ["traditional"],
+    minPrice: 999,
+    maxPrice: 3499
+  },
+  "W": {
+    categories: ["kurti", "top", "skirt", "pants"],
+    styles: ["traditional", "casual"],
+    minPrice: 799,
+    maxPrice: 2499
+  },
+  "Only": {
+    categories: ["top", "crop top", "jeans", "dress", "skirt", "jacket"],
+    styles: ["casual", "party"],
+    minPrice: 899,
+    maxPrice: 3199
+  },
+  "Vero Moda": {
+    categories: ["top", "dress", "skirt", "pants", "jacket"],
+    styles: ["casual", "party", "formal"],
+    minPrice: 1199,
+    maxPrice: 4999
+  },
+  "Allen Solly": {
+    categories: ["shirt", "t-shirt", "pants", "dress", "top"],
+    styles: ["casual", "formal"],
+    minPrice: 999,
+    maxPrice: 2999
+  },
+  "Van Heusen": {
+    categories: ["shirt", "pants", "jacket", "dress"],
+    styles: ["formal"],
+    minPrice: 1299,
+    maxPrice: 4999
+  },
+  "Tommy Hilfiger": {
+    categories: ["shirt", "t-shirt", "pants", "jeans", "jacket", "accessories"],
+    styles: ["casual", "travel"],
+    minPrice: 1999,
+    maxPrice: 7999
+  },
+  "Others": {
+    categories: ["shirt", "t-shirt", "pants", "jeans", "shorts", "jacket", "shoes", "accessories", "top", "crop top", "kurti", "skirt", "leggings", "dress", "saree"],
+    styles: ["casual", "formal", "party", "traditional", "travel"],
+    minPrice: 299,
+    maxPrice: 1999
   }
 };
 

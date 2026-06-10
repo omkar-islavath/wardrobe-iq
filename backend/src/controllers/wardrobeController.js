@@ -70,6 +70,19 @@ export const uploadClothingItem = async (req, res) => {
     }
 
     // 3. Create wardrobe item in database
+    let targetGender = req.body.gender;
+    if (!targetGender) {
+      const femaleOnlyCategories = ['top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree'];
+      const cat = (analysisResult.category || 'shirt').toLowerCase();
+      if (femaleOnlyCategories.includes(cat)) {
+        targetGender = 'women';
+      } else if (cat === 'accessories') {
+        targetGender = 'unisex';
+      } else {
+        targetGender = req.user.gender === 'female' ? 'women' : 'men';
+      }
+    }
+
     const wardrobeItem = await WardrobeItem.create({
       userId: req.user.id,
       category: analysisResult.category || 'shirt',
@@ -81,6 +94,7 @@ export const uploadClothingItem = async (req, res) => {
       imageUrl: imageUrl,
       brand: analysisResult.brand || '',
       tags: analysisResult.tags || [],
+      gender: targetGender,
     });
 
     res.status(201).json({
@@ -129,6 +143,11 @@ export const getClothingItems = async (req, res) => {
     // Filtering by Brand
     if (req.query.brand) {
       where.brand = { [Op.iLike]: req.query.brand };
+    }
+
+    // Filtering by target Gender
+    if (req.query.gender) {
+      where.gender = req.query.gender.toLowerCase();
     }
 
     // Search query (matches tags or brand or pattern in Postgres)
@@ -218,6 +237,7 @@ export const updateClothingItem = async (req, res) => {
       'season',
       'brand',
       'tags',
+      'gender',
     ];
 
     fieldsToUpdate.forEach((field) => {

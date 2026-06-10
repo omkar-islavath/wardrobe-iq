@@ -42,6 +42,7 @@ const PackingAssistant = () => {
   };
 
   const generateTripSchedule = (wardrobe) => {
+    const totalDays = parseInt(days) || 1;
     // Separate garments
     const tops = wardrobe.filter(i => ['shirt', 't-shirt'].includes(i.category));
     const bottoms = wardrobe.filter(i => ['pants', 'jeans', 'shorts'].includes(i.category));
@@ -56,8 +57,8 @@ const PackingAssistant = () => {
     };
 
     // Calculate how many items we need to pack based on days
-    const topsNeeded = Math.ceil(days * 1.2);
-    const bottomsNeeded = Math.ceil(days / 2);
+    const topsNeeded = Math.ceil(totalDays * 1.2);
+    const bottomsNeeded = Math.ceil(totalDays / 2);
     const shoesNeeded = 2;
     const jacketsNeeded = tripWeather === 'winter' ? 2 : (tripWeather === 'all' ? 1 : 0);
 
@@ -67,13 +68,13 @@ const PackingAssistant = () => {
     if (jacketsNeeded > 0) {
       initialChecklist[`${jacketsNeeded} Jackets/Outerwear`] = false;
     }
-    initialChecklist[`Underwear & Socks (${days} pairs)`] = false;
+    initialChecklist[`Underwear & Socks (${totalDays} pairs)`] = false;
 
     setChecklist(initialChecklist);
 
     // Build day-by-day outfits schedule
     const dailySchedule = [];
-    for (let day = 1; day <= days; day++) {
+    for (let day = 1; day <= totalDays; day++) {
       // Pick matching items or fallback to text if wardrobe is sparse
       const top = tops[day % tops.length] || { color: 'solid', category: 'top', imageUrl: '' };
       const bottom = bottoms[day % bottoms.length] || { color: 'neutral', category: 'bottom', imageUrl: '' };
@@ -92,7 +93,7 @@ const PackingAssistant = () => {
 
     setPackingData({
       destination,
-      days,
+      days: totalDays,
       weather: tripWeather,
       dailySchedule
     });
@@ -155,7 +156,17 @@ const PackingAssistant = () => {
                 min="1"
                 max="14"
                 value={days}
-                onChange={(e) => setDays(parseInt(e.target.value) || 1)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setDays('');
+                  } else {
+                    const parsed = parseInt(val);
+                    if (!isNaN(parsed)) {
+                      setDays(Math.min(14, Math.max(1, parsed)));
+                    }
+                  }
+                }}
                 className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 text-xs focus:ring-indigo-500"
                 required
               />

@@ -14,7 +14,8 @@ import {
   Calendar,
   Layers,
   Palette,
-  Shirt
+  Shirt,
+  User
 } from 'lucide-react';
 
 const Wardrobe = () => {
@@ -27,6 +28,7 @@ const Wardrobe = () => {
   const [style, setStyle] = useState('');
   const [season, setSeason] = useState('');
   const [brand, setBrand] = useState('');
+  const [genderFilter, setGenderFilter] = useState('');
 
   // Modal & Edit state
   const [selectedItem, setSelectedItem] = useState(null);
@@ -45,14 +47,14 @@ const Wardrobe = () => {
   const maleCategories = ['shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
   const femaleCategories = ['top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree', 'shirt', 't-shirt', 'pants', 'jeans', 'shorts', 'jacket', 'shoes', 'accessories'];
   const categoriesList = user?.gender === 'female' ? femaleCategories : maleCategories;
-  const colorsList = ['white', 'black', 'grey', 'navy blue', 'blue', 'olive', 'beige', 'brown', 'red', 'yellow', 'pink'];
+  const colorsList = ['white', 'black', 'grey', 'navy blue', 'blue', 'olive', 'beige', 'brown', 'red', 'yellow', 'pink', 'green', 'orange', 'purple', 'maroon', 'cream', 'khaki', 'teal', 'peach', 'others'];
   const stylesList = ['casual', 'formal', 'party', 'traditional', 'travel'];
   const seasonsList = ['summer', 'winter', 'rainy', 'spring-fall', 'all'];
-  const brandsList = ['Roadster', 'Wrogn', 'HRX', 'Puma', 'Bata', 'Louis Philippe', 'Mast & Harbour', 'Adidas', 'Nike', 'Zara', 'H&M', 'Levi\'s', 'Generic'];
+  const brandsList = ['Roadster', 'Wrogn', 'HRX', 'Puma', 'Bata', 'Louis Philippe', 'Mast & Harbour', 'Adidas', 'Nike', 'Zara', 'H&M', 'Levi\'s', 'Biba', 'W', 'Only', 'Vero Moda', 'Allen Solly', 'Van Heusen', 'Tommy Hilfiger', 'Others'];
 
   useEffect(() => {
     fetchItems();
-  }, [category, color, style, season, brand]);
+  }, [category, color, style, season, brand, genderFilter]);
 
   const fetchItems = async () => {
     try {
@@ -63,6 +65,7 @@ const Wardrobe = () => {
       if (style) queryParams.push(`style=${style}`);
       if (season) queryParams.push(`season=${season}`);
       if (brand) queryParams.push(`brand=${brand}`);
+      if (genderFilter) queryParams.push(`gender=${genderFilter}`);
       if (search) queryParams.push(`search=${search}`);
 
       const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
@@ -93,6 +96,7 @@ const Wardrobe = () => {
       style: item.style || '',
       season: item.season || 'all',
       brand: item.brand || '',
+      gender: item.gender || 'unisex',
       tags: (item.tags || []).join(', '),
     });
   };
@@ -182,7 +186,7 @@ const Wardrobe = () => {
         </form>
 
         {/* Dropdowns */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-2">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 pt-2">
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
             <select
@@ -240,6 +244,20 @@ const Wardrobe = () => {
             >
               <option value="">All Brands</option>
               {brandsList.map(brnd => <option key={brnd} value={brnd}>{brnd}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Gender</label>
+            <select
+              value={genderFilter}
+              onChange={(e) => setGenderFilter(e.target.value)}
+              className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm focus:ring-indigo-500 capitalize"
+            >
+              <option value="">All Genders</option>
+              <option value="unisex">Unisex</option>
+              <option value="men">Men</option>
+              <option value="women">Women</option>
             </select>
           </div>
         </div>
@@ -351,6 +369,11 @@ const Wardrobe = () => {
                       <span className="text-slate-400">Recommended Season:</span>
                       <span className="font-semibold capitalize">{selectedItem.season || 'All'}</span>
                     </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <User className="w-4 h-4 text-indigo-500" />
+                      <span className="text-slate-400">Target Gender:</span>
+                      <span className="font-semibold capitalize">{selectedItem.gender || 'unisex'}</span>
+                    </div>
                   </div>
 
                   {/* Tags */}
@@ -443,7 +466,7 @@ const Wardrobe = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <div>
                         <label className="block text-slate-400 mb-1">Style</label>
                         <select
@@ -462,6 +485,18 @@ const Wardrobe = () => {
                           className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs focus:ring-indigo-500"
                         >
                           {seasonsList.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-slate-400 mb-1">Target Gender</label>
+                        <select
+                          value={editForm.gender || 'unisex'}
+                          onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                          className="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs focus:ring-indigo-500 capitalize"
+                        >
+                          <option value="unisex">Unisex</option>
+                          <option value="men">Men</option>
+                          <option value="women">Women</option>
                         </select>
                       </div>
                     </div>
