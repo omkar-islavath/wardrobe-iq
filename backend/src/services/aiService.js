@@ -327,38 +327,68 @@ const getSortedCandidates = (wardrobeItems, query, filters) => {
     budget = parseInt(priceMatch[1]);
   }
 
+  // 1.5. Clean query of matching reference context to find the actual target category
+  let cleanQuery = lowercaseQuery;
+  const matchingPhrases = [
+    /(?:for|with|match|matching|pair|go with)\s+(?:my\s+)?(?:[a-z-]+\s+)*(?:shirt|t-shirt|pant|trouser|chino|jeans|denim|shorts|jacket|shoes|sneaker|boot|top|crop top|kurti|skirt|leggings|dress|saree)s?/gi
+  ];
+  matchingPhrases.forEach(regex => {
+    cleanQuery = cleanQuery.replace(regex, '');
+  });
+
+  // Extract source category from query to exclude it if no target category is specified
+  let matchSourceCategory = '';
+  const sourceMatches = lowercaseQuery.match(/(?:for|with|match|matching|pair|go with)\s+(?:my\s+)?(?:[a-z-]+\s+)*(shirt|t-shirt|pant|trouser|chino|jeans|denim|shorts|jacket|shoes|sneaker|boot|top|crop top|kurti|skirt|leggings|dress|saree)s?/i);
+  if (sourceMatches) {
+    const rawSource = sourceMatches[1].toLowerCase();
+    if (rawSource.includes("pant") || rawSource.includes("trouser") || rawSource.includes("chino")) matchSourceCategory = "pants";
+    else if (rawSource.includes("jean") || rawSource.includes("denim")) matchSourceCategory = "jeans";
+    else if (rawSource.includes("tshirt") || rawSource.includes("t-shirt")) matchSourceCategory = "t-shirt";
+    else if (rawSource.includes("shirt")) matchSourceCategory = "shirt";
+    else if (rawSource.includes("shoe") || rawSource.includes("sneaker") || rawSource.includes("boot")) matchSourceCategory = "shoes";
+    else if (rawSource.includes("short")) matchSourceCategory = "shorts";
+    else if (rawSource.includes("jacket")) matchSourceCategory = "jacket";
+    else if (rawSource.includes("top")) matchSourceCategory = "top";
+    else if (rawSource.includes("crop top")) matchSourceCategory = "crop top";
+    else if (rawSource.includes("kurti")) matchSourceCategory = "kurti";
+    else if (rawSource.includes("skirt")) matchSourceCategory = "skirt";
+    else if (rawSource.includes("leggings")) matchSourceCategory = "leggings";
+    else if (rawSource.includes("dress")) matchSourceCategory = "dress";
+    else if (rawSource.includes("saree")) matchSourceCategory = "saree";
+  }
+
   // 2. Parse category from query or filters
   let categoryFilter = (filters.category || '').toLowerCase();
   if (!categoryFilter) {
-    if (lowercaseQuery.includes("crop top") || lowercaseQuery.includes("croptop")) {
+    if (cleanQuery.includes("crop top") || cleanQuery.includes("croptop")) {
       categoryFilter = "crop top";
-    } else if (lowercaseQuery.includes("top")) {
+    } else if (cleanQuery.includes("top")) {
       categoryFilter = "top";
-    } else if (lowercaseQuery.includes("kurti") || lowercaseQuery.includes("kurtas") || lowercaseQuery.includes("kurta")) {
+    } else if (cleanQuery.includes("kurti") || cleanQuery.includes("kurtas") || cleanQuery.includes("kurta")) {
       categoryFilter = "kurti";
-    } else if (lowercaseQuery.includes("skirt") || lowercaseQuery.includes("skirts")) {
+    } else if (cleanQuery.includes("skirt") || cleanQuery.includes("skirts")) {
       categoryFilter = "skirt";
-    } else if (lowercaseQuery.includes("legging") || lowercaseQuery.includes("leggings")) {
+    } else if (cleanQuery.includes("legging") || cleanQuery.includes("leggings")) {
       categoryFilter = "leggings";
-    } else if (lowercaseQuery.includes("dress") || lowercaseQuery.includes("dresses")) {
+    } else if (cleanQuery.includes("dress") || cleanQuery.includes("dresses")) {
       categoryFilter = "dress";
-    } else if (lowercaseQuery.includes("saree") || lowercaseQuery.includes("sari") || lowercaseQuery.includes("sarees")) {
+    } else if (cleanQuery.includes("saree") || cleanQuery.includes("sari") || cleanQuery.includes("sarees")) {
       categoryFilter = "saree";
-    } else if (lowercaseQuery.includes("pant") || lowercaseQuery.includes("trouser") || lowercaseQuery.includes("chino") || lowercaseQuery.includes("trousers")) {
+    } else if (cleanQuery.includes("pant") || cleanQuery.includes("trouser") || cleanQuery.includes("chino") || cleanQuery.includes("trousers")) {
       categoryFilter = "pants";
-    } else if (lowercaseQuery.includes("shoe") || lowercaseQuery.includes("sneaker") || lowercaseQuery.includes("boot") || lowercaseQuery.includes("footwear") || lowercaseQuery.includes("sneakers") || lowercaseQuery.includes("boots")) {
+    } else if (cleanQuery.includes("shoe") || cleanQuery.includes("sneaker") || cleanQuery.includes("boot") || cleanQuery.includes("footwear") || cleanQuery.includes("sneakers") || cleanQuery.includes("boots")) {
       categoryFilter = "shoes";
-    } else if (lowercaseQuery.includes("jacket") || lowercaseQuery.includes("hoodie") || lowercaseQuery.includes("coat") || lowercaseQuery.includes("outerwear")) {
+    } else if (cleanQuery.includes("jacket") || cleanQuery.includes("hoodie") || cleanQuery.includes("coat") || cleanQuery.includes("outerwear")) {
       categoryFilter = "jacket";
-    } else if (lowercaseQuery.includes("jean") || lowercaseQuery.includes("denim") || lowercaseQuery.includes("jeans")) {
+    } else if (cleanQuery.includes("jean") || cleanQuery.includes("denim") || cleanQuery.includes("jeans")) {
       categoryFilter = "jeans";
-    } else if (lowercaseQuery.includes("tshirt") || lowercaseQuery.includes("t-shirt") || lowercaseQuery.includes("tee")) {
+    } else if (cleanQuery.includes("tshirt") || cleanQuery.includes("t-shirt") || cleanQuery.includes("tee")) {
       categoryFilter = "t-shirt";
-    } else if (lowercaseQuery.includes("shirt")) {
+    } else if (cleanQuery.includes("shirt")) {
       categoryFilter = "shirt";
-    } else if (lowercaseQuery.includes("short") || lowercaseQuery.includes("shorts")) {
+    } else if (cleanQuery.includes("short") || cleanQuery.includes("shorts")) {
       categoryFilter = "shorts";
-    } else if (lowercaseQuery.includes("watch") || lowercaseQuery.includes("belt") || lowercaseQuery.includes("accessory") || lowercaseQuery.includes("accessories")) {
+    } else if (cleanQuery.includes("watch") || cleanQuery.includes("belt") || cleanQuery.includes("accessory") || cleanQuery.includes("accessories")) {
       categoryFilter = "accessories";
     }
   }
@@ -470,15 +500,21 @@ const getSortedCandidates = (wardrobeItems, query, filters) => {
     });
   }
 
-  let finalCandidates = categoryFilteredCandidates.filter(item => item.price <= budget);
+  // Filter out the match source category to prevent matching jeans with jeans, kurtis with kurtis, etc.
+  let sourceFilteredCandidates = categoryFilteredCandidates;
+  if (matchSourceCategory && !categoryFilter) {
+    sourceFilteredCandidates = categoryFilteredCandidates.filter(item => item.category !== matchSourceCategory);
+  }
+
+  let finalCandidates = sourceFilteredCandidates.filter(item => item.price <= budget);
   finalCandidates.sort((a, b) => b.similarity - a.similarity);
 
   const results = finalCandidates.slice(0, 20);
 
   // Fallbacks if we have too few items
-  if (results.length < 10 && categoryFilteredCandidates.length > results.length) {
+  if (results.length < 10 && sourceFilteredCandidates.length > results.length) {
     const existingNames = new Set(results.map(r => r.name));
-    const fallbacks = categoryFilteredCandidates
+    const fallbacks = sourceFilteredCandidates
       .filter(item => !existingNames.has(item.name))
       .sort((a, b) => b.similarity - a.similarity);
     
@@ -538,12 +574,14 @@ export const getShoppingSuggestions = async (wardrobeItems, query, filters) => {
       User's Current Wardrobe:
       ${JSON.stringify(wardrobeItems.map(i => ({ category: i.category, color: i.color, style: i.style, pattern: i.pattern })), null, 2)}
 
-      Candidate Items List (you MUST select ONLY from these items by index):
+      Candidate Items List (you MUST select ONLY from these items):
       ${JSON.stringify(candidates.map((item, idx) => ({ index: idx, name: item.name, brand: item.brand, price: item.price, category: item.category, color: item.color, style: item.style, description: item.description })), null, 2)}
 
       Return ONLY a JSON array of 3 objects representing your selection.
       Each object must contain:
       - "index": Number (the index of the selected item in the Candidate Items List)
+      - "name": String (the exact name of the selected item from the list)
+      - "brand": String (the brand of the selected item)
       - "matchReason": String (detailed explanation of exactly which item in the user's wardrobe it pairs with and why it fits their search occasion)
 
       Do not return markdown format or any text outside of the JSON array.
@@ -551,6 +589,8 @@ export const getShoppingSuggestions = async (wardrobeItems, query, filters) => {
       [
         {
           "index": 0,
+          "name": "string",
+          "brand": "string",
           "matchReason": "string"
         }
       ]
@@ -574,9 +614,40 @@ export const getShoppingSuggestions = async (wardrobeItems, query, filters) => {
     const selections = Array.isArray(parsed) ? parsed : [parsed];
     
     return selections.map((sel, idx) => {
-      const item = (sel.index !== undefined && candidates[sel.index] !== undefined) 
-        ? candidates[sel.index] 
-        : candidates[idx % candidates.length];
+      let item = null;
+      
+      // 1. Resolve from index
+      if (sel.index !== undefined && candidates[sel.index] !== undefined) {
+        item = candidates[sel.index];
+      }
+      
+      // 2. Fallback: Search candidates by exact or partial name
+      if (!item && sel.name) {
+        const lowerSelName = sel.name.toLowerCase();
+        item = candidates.find(c => 
+          lowerSelName.includes(c.name.toLowerCase()) || 
+          c.name.toLowerCase().includes(lowerSelName)
+        );
+      }
+      
+      // 3. Fallback: Search entire dataset by name to ensure we get a valid catalog item
+      if (!item && sel.name) {
+        const lowerSelName = sel.name.toLowerCase();
+        item = clothingDataset.find(c => 
+          lowerSelName.includes(c.name.toLowerCase()) || 
+          c.name.toLowerCase().includes(lowerSelName)
+        );
+      }
+      
+      // 4. Fallback: Search candidates by category match
+      if (!item && sel.category) {
+        item = candidates.find(c => c.category === sel.category.toLowerCase());
+      }
+      
+      // 5. Absolute Fallback: Default to index sequence
+      if (!item) {
+        item = candidates[idx % candidates.length];
+      }
       
       const searchTerms = item.name.toLowerCase().startsWith(item.brand.toLowerCase())
         ? item.name
@@ -611,19 +682,36 @@ export const getShoppingSuggestions = async (wardrobeItems, query, filters) => {
 const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
   const candidates = getSortedCandidates(wardrobeItems, query, filters).slice(0, 3);
   
-  const sampleBottom = wardrobeItems.find(i => ['pants', 'jeans', 'shorts'].includes(i.category)) || { color: 'dark', category: 'jeans' };
-  const sampleTop = wardrobeItems.find(i => ['shirt', 't-shirt'].includes(i.category)) || { color: 'white', category: 't-shirt' };
+  const sampleBottom = wardrobeItems.find(i => ['pants', 'jeans', 'shorts', 'skirt', 'leggings'].includes(i.category)) || { color: 'dark', category: 'jeans' };
+  const sampleTop = wardrobeItems.find(i => ['shirt', 't-shirt', 'top', 'crop top', 'kurti'].includes(i.category)) || { color: 'white', category: 't-shirt' };
 
   return candidates.map((item, idx) => {
     let matchReason = `Matches your style criteria.`;
     if (item.category === 'shirt' || item.category === 't-shirt') {
-      matchReason = `Pairs beautifully with the ${sampleBottom.color} ${sampleBottom.category} in your wardrobe, adding a versatile, coordinated layering option.`;
+      matchReason = `Pairs beautifully with the ${sampleBottom.color} ${sampleBottom.category} in your wardrobe, adding a versatile, coordinated option.`;
     } else if (item.category === 'pants' || item.category === 'jeans' || item.category === 'shorts') {
-      matchReason = `Coordinates nicely with the ${sampleTop.color} ${sampleTop.category} in your wardrobe, creating a clean ${item.style} outfit structure.`;
+      matchReason = `Coordinates nicely with the ${sampleTop.color} ${sampleTop.category} in your wardrobe, creating a clean, structured outfit.`;
     } else if (item.category === 'shoes') {
-      matchReason = `Complements your ${sampleBottom.color} ${sampleBottom.category} perfectly. Ideal for complete ${item.style} styling and daily wear.`;
-    } else {
-      matchReason = `An essential layering piece to complete your ${sampleTop.color} tops and elevate your styling depth.`;
+      matchReason = `Complements your ${sampleBottom.color} ${sampleBottom.category} and tops perfectly. Ideal for completing your outfit's styling.`;
+    } else if (item.category === 'saree') {
+      matchReason = `A stunning traditional saree that adds rich ethnic elegance to your collection. Pair with neutral heels for a complete festive look.`;
+    } else if (item.category === 'kurti') {
+      const bottom = wardrobeItems.find(i => ['leggings', 'jeans', 'pants'].includes(i.category)) || { color: 'blue', category: 'jeans' };
+      matchReason = `Pairs beautifully with the ${bottom.color} ${bottom.category} in your wardrobe, creating a comfortable yet elegant traditional-casual style.`;
+    } else if (item.category === 'skirt') {
+      matchReason = `Complements the ${sampleTop.color} ${sampleTop.category} in your wardrobe, offering a stylish and feminine alternative for warm days.`;
+    } else if (item.category === 'top' || item.category === 'crop top') {
+      matchReason = `Pairs perfectly with the ${sampleBottom.color} ${sampleBottom.category} in your wardrobe for a chic, balanced silhouette.`;
+    } else if (item.category === 'leggings') {
+      const kurti = wardrobeItems.find(i => i.category === 'kurti') || { color: 'traditional', category: 'kurti' };
+      matchReason = `An essential wardrobe foundation. Pairs perfectly under the ${kurti.color} ${kurti.category} in your wardrobe for daily comfort.`;
+    } else if (item.category === 'dress') {
+      const shoes = wardrobeItems.find(i => i.category === 'shoes') || { color: 'classic', category: 'shoes' };
+      matchReason = `A beautiful, standalone statement dress. Style it with the ${shoes.color} ${shoes.category} in your collection for an effortless look.`;
+    } else if (item.category === 'jacket') {
+      matchReason = `A versatile layering piece to wear over your ${sampleTop.color} ${sampleTop.category}, adding structure and warmth to casual outings.`;
+    } else if (item.category === 'accessories') {
+      matchReason = `The perfect finishing touch to elevate your daily outfits, adding detail and refinement to your style.`;
     }
 
     const searchTerms = item.name.toLowerCase().startsWith(item.brand.toLowerCase())
