@@ -764,6 +764,26 @@ const generateExtraItems = () => {
         
         const description = `${style} ${pattern} ${color} ${category} from ${brand}. Made with high-quality material, perfect for ${season} wear.`;
         
+        const femaleOnlyCategories = ['top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree'];
+        const femaleBrands = ['Biba', 'W', 'Only', 'Vero Moda'];
+        const maleBrands = ['Louis Philippe', 'Van Heusen', 'Wrogn'];
+
+        let gender = 'men';
+        if (femaleOnlyCategories.includes(category)) {
+          gender = 'women';
+        } else if (femaleBrands.includes(brand)) {
+          gender = 'women';
+        } else if (maleBrands.includes(brand)) {
+          gender = 'men';
+        } else if (category === 'accessories') {
+          gender = 'unisex';
+        } else {
+          // Neutral brands, alternate between men, women, unisex
+          if (i === 0) gender = 'men';
+          else if (i === 1) gender = 'women';
+          else gender = 'unisex';
+        }
+
         extraItems.push({
           name,
           brand,
@@ -775,7 +795,8 @@ const generateExtraItems = () => {
           season,
           price: Math.round(price / 10) * 10 - 1, // make it look like ₹99, ₹1499, etc.
           imageUrl: imgUrl,
-          description
+          description,
+          gender
         });
         
         idCounter++;
@@ -786,6 +807,15 @@ const generateExtraItems = () => {
 };
 
 export const clothingDataset = [
-  ...manualClothingDataset,
+  ...manualClothingDataset.map(item => {
+    const femaleOnlyCategories = ['top', 'crop top', 'kurti', 'skirt', 'leggings', 'dress', 'saree'];
+    let gender = 'men';
+    if (femaleOnlyCategories.includes(item.category)) {
+      gender = 'women';
+    } else if (item.category === 'accessories') {
+      gender = 'unisex';
+    }
+    return { ...item, gender };
+  }),
   ...generateExtraItems()
 ];

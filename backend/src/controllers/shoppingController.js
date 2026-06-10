@@ -52,6 +52,7 @@ export const getShoppingRecommendations = async (req, res) => {
       brand: brand || '',
       category: category || '',
       occasion: occasion || '',
+      gender: req.user.gender || 'male'
     };
 
     const suggestions = await getShoppingSuggestions(wardrobeItems, query, filters);

@@ -82,8 +82,13 @@ export const analyzeClothingImage = async (imagePath, mimeType, gender = 'male')
     const result = await model.generateContent([prompt, imagePart]);
     const responseText = result.response.text().trim();
     
-    // Clean up response text if Gemini wraps it in markdown ```json ... ```
-    const cleanedJson = responseText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+    // Robust extraction of JSON object
+    let jsonStart = responseText.indexOf('{');
+    let jsonEnd = responseText.lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) {
+      throw new Error("Could not find JSON structure in model response");
+    }
+    const cleanedJson = responseText.substring(jsonStart, jsonEnd + 1);
     return JSON.parse(cleanedJson);
   } catch (error) {
     console.error("Error in Gemini Clothing Analysis:", error);
@@ -221,7 +226,14 @@ export const runWardrobeGapAnalysis = async (wardrobeItems) => {
 
     const result = await model.generateContent([prompt]);
     const responseText = result.response.text().trim();
-    const cleanedJson = responseText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+    
+    // Robust extraction of JSON object
+    let jsonStart = responseText.indexOf('{');
+    let jsonEnd = responseText.lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) {
+      throw new Error("Could not find JSON structure in model response");
+    }
+    const cleanedJson = responseText.substring(jsonStart, jsonEnd + 1);
     return JSON.parse(cleanedJson);
   } catch (error) {
     console.error("Error in Gemini Gap Analysis:", error);
@@ -303,78 +315,9 @@ const runMockGapAnalysis = (wardrobeItems) => {
 };
 
 /**
- * 4. Shopping Assistant Recommendations
+ * Helper to retrieve, score, and rank candidate items from clothingDataset
  */
-export const getShoppingSuggestions = async (wardrobeItems, query, filters) => {
-  if (!genAI) {
-    return runMockShoppingSuggestions(wardrobeItems, query, filters);
-  }
-
-  try {
-    const model = getModelWithOptions("gemini-2.5-flash");
-    const prompt = `
-      You are a personalized AI shopping assistant. Based on the user's current wardrobe items, recommend 3 specific clothing items that would match their current clothes.
-      The user's query is: "${query}"
-      Filters: Budget: ${filters.budget || 'Any'}, Brand: ${filters.brand || 'Any'}, Category: ${filters.category || 'Any'}, Occasion: ${filters.occasion || 'Any'}
-
-      User's Wardrobe:
-      ${JSON.stringify(wardrobeItems.map(i => ({ category: i.category, color: i.color, style: i.style, pattern: i.pattern })), null, 2)}
-
-      Return ONLY a JSON array of 3 objects.
-      Each object must contain:
-      - "name": String (product name)
-      - "brand": String
-      - "price": Number (in INR ₹, matching their budget filter if specified)
-      - "imageUrl": String (use a placeholder clothing image URL or a high-quality free image URL)
-      - "purchaseLink": String (simulated store link)
-      - "matchReason": String (detailed explanation of exactly which item in their wardrobe it pairs with and why it fits their style profile or occasion)
-
-      Do not return markdown format or any text outside of the JSON array.
-      JSON structure:
-      [
-        {
-          "name": "string",
-          "brand": "string",
-          "price": 0,
-          "imageUrl": "string",
-          "purchaseLink": "string",
-          "matchReason": "string"
-        }
-      ]
-    `;
-
-    const result = await model.generateContent([prompt]);
-    const responseText = result.response.text().trim();
-    const cleanedJson = responseText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
-    const suggestions = JSON.parse(cleanedJson);
-    
-    return suggestions.map((prod, idx) => {
-      const searchTerms = `${prod.brand || ''} ${prod.name || ''}`.trim();
-      const formattedTerms = searchTerms.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      
-      const platforms = ['myntra', 'ajio', 'amazon'];
-      const platform = platforms[(idx + (prod.name ? prod.name.length : 0)) % platforms.length];
-      let purchaseLink;
-      if (platform === 'ajio') {
-        purchaseLink = `https://www.ajio.com/search/?text=${encodeURIComponent(searchTerms)}`;
-      } else if (platform === 'amazon') {
-        purchaseLink = `https://www.amazon.in/s?k=${encodeURIComponent(searchTerms)}`;
-      } else {
-        purchaseLink = `https://www.myntra.com/${formattedTerms}?rawQuery=${encodeURIComponent(searchTerms)}`;
-      }
-
-      return {
-        ...prod,
-        purchaseLink
-      };
-    });
-  } catch (error) {
-    console.error("Error in Gemini Shopping Assistant:", error);
-    return runMockShoppingSuggestions(wardrobeItems, query, filters);
-  }
-};
-
-const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
+const getSortedCandidates = (wardrobeItems, query, filters) => {
   const lowercaseQuery = query.toLowerCase();
   
   // 1. Parse budget from query or filters
@@ -387,7 +330,21 @@ const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
   // 2. Parse category from query or filters
   let categoryFilter = (filters.category || '').toLowerCase();
   if (!categoryFilter) {
-    if (lowercaseQuery.includes("pant") || lowercaseQuery.includes("trouser") || lowercaseQuery.includes("chino") || lowercaseQuery.includes("trousers")) {
+    if (lowercaseQuery.includes("crop top") || lowercaseQuery.includes("croptop")) {
+      categoryFilter = "crop top";
+    } else if (lowercaseQuery.includes("top")) {
+      categoryFilter = "top";
+    } else if (lowercaseQuery.includes("kurti") || lowercaseQuery.includes("kurtas") || lowercaseQuery.includes("kurta")) {
+      categoryFilter = "kurti";
+    } else if (lowercaseQuery.includes("skirt") || lowercaseQuery.includes("skirts")) {
+      categoryFilter = "skirt";
+    } else if (lowercaseQuery.includes("legging") || lowercaseQuery.includes("leggings")) {
+      categoryFilter = "leggings";
+    } else if (lowercaseQuery.includes("dress") || lowercaseQuery.includes("dresses")) {
+      categoryFilter = "dress";
+    } else if (lowercaseQuery.includes("saree") || lowercaseQuery.includes("sari") || lowercaseQuery.includes("sarees")) {
+      categoryFilter = "saree";
+    } else if (lowercaseQuery.includes("pant") || lowercaseQuery.includes("trouser") || lowercaseQuery.includes("chino") || lowercaseQuery.includes("trousers")) {
       categoryFilter = "pants";
     } else if (lowercaseQuery.includes("shoe") || lowercaseQuery.includes("sneaker") || lowercaseQuery.includes("boot") || lowercaseQuery.includes("footwear") || lowercaseQuery.includes("sneakers") || lowercaseQuery.includes("boots")) {
       categoryFilter = "shoes";
@@ -409,7 +366,7 @@ const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
   // 3. Parse brand from query or filters
   let brandFilter = (filters.brand || '').toLowerCase();
   if (!brandFilter) {
-    const brandsList = ['roadster', 'wrogn', 'hrx', 'puma', 'bata', 'louis philippe', 'mast & harbour', 'adidas', 'nike', 'zara', 'h&m', 'levi'];
+    const brandsList = ['roadster', 'wrogn', 'hrx', 'puma', 'bata', 'louis philippe', 'mast & harbour', 'adidas', 'nike', 'zara', 'h&m', 'levi', 'biba', 'only', 'vero moda', 'allen solly', 'van heusen', 'tommy hilfiger', 'w'];
     for (const b of brandsList) {
       if (lowercaseQuery.includes(b)) {
         brandFilter = b;
@@ -426,18 +383,16 @@ const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
 
   // 5. Scoring dictionary for weights
   const weights = {
-    // Categories
     'shirt': 12, 'tshirt': 12, 't-shirt': 12, 'pants': 12, 'trouser': 12, 'trousers': 12,
     'jeans': 12, 'denim': 12, 'shorts': 12, 'jacket': 12, 'coat': 12, 'hoodie': 12,
     'shoes': 12, 'sneaker': 12, 'sneakers': 12, 'boot': 12, 'boots': 12, 'accessory': 12, 'accessories': 12,
-    // Colors
+    'top': 12, 'crop top': 12, 'croptop': 12, 'kurti': 12, 'kurta': 12, 'skirt': 12, 'leggings': 12, 'dress': 12, 'saree': 12, 'sari': 12,
     'white': 10, 'black': 10, 'grey': 10, 'gray': 10, 'blue': 10, 'navy': 10,
     'olive': 10, 'green': 10, 'beige': 10, 'brown': 10, 'red': 10, 'yellow': 10,
     'pink': 10, 'khaki': 10, 'cream': 10, 'rust': 10, 'maroon': 10,
-    // Brands
     'roadster': 8, 'wrogn': 8, 'hrx': 8, 'puma': 8, 'bata': 8, 'louis': 8, 'philippe': 8,
     'mast': 8, 'harbour': 8, 'adidas': 8, 'nike': 8, 'zara': 8, 'hm': 8, 'levis': 8, 'levi': 8,
-    // Styles
+    'biba': 8, 'w': 8, 'only': 8, 'vero': 8, 'moda': 8, 'allen': 8, 'solly': 8, 'van': 8, 'heusen': 8, 'tommy': 8, 'hilfiger': 8,
     'casual': 6, 'formal': 6, 'party': 6, 'traditional': 6, 'travel': 6, 'sports': 6
   };
 
@@ -475,16 +430,35 @@ const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
     };
   });
 
+  // 6.5. Filter by gender
+  let genderFilteredItems = scoredItems;
+  const userGender = (filters.gender || 'male').toLowerCase();
+  
+  // Default based on user gender
+  let targetGenders = [];
+  if (userGender === 'female' || userGender === 'women') {
+    targetGenders = ['women', 'unisex'];
+  } else {
+    targetGenders = ['men', 'unisex'];
+  }
+
+  // Override if query explicitly mentions gender-specific keywords
+  if (lowercaseQuery.includes('women') || lowercaseQuery.includes('womens') || lowercaseQuery.includes('female') || lowercaseQuery.includes('lady') || lowercaseQuery.includes('ladies') || lowercaseQuery.includes('saree') || lowercaseQuery.includes('kurti') || lowercaseQuery.includes('dress') || lowercaseQuery.includes('skirt') || lowercaseQuery.includes('crop top')) {
+    targetGenders = ['women', 'unisex'];
+  } else if (lowercaseQuery.includes('men') || lowercaseQuery.includes('mens') || lowercaseQuery.includes('male') || lowercaseQuery.includes('boy') || lowercaseQuery.includes('boys')) {
+    targetGenders = ['men', 'unisex'];
+  }
+
+  genderFilteredItems = scoredItems.filter(item => targetGenders.includes(item.gender));
+
   // 7. Apply layered filters
-  // Step 1: Base candidates filtered by brand if brandFilter is set
-  let brandFilteredCandidates = scoredItems;
+  let brandFilteredCandidates = genderFilteredItems;
   if (brandFilter) {
-    brandFilteredCandidates = scoredItems.filter(item => 
+    brandFilteredCandidates = genderFilteredItems.filter(item => 
       item.brand.toLowerCase().includes(brandFilter) || brandFilter.includes(item.brand.toLowerCase())
     );
   }
 
-  // Step 2: Candidates filtered by category if categoryFilter is set
   let categoryFilteredCandidates = brandFilteredCandidates;
   if (categoryFilter) {
     categoryFilteredCandidates = brandFilteredCandidates.filter(item => {
@@ -496,94 +470,151 @@ const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
     });
   }
 
-  // Step 3: Candidates within budget
   let finalCandidates = categoryFilteredCandidates.filter(item => item.price <= budget);
-
-  // Sort by similarity score descending
   finalCandidates.sort((a, b) => b.similarity - a.similarity);
 
-  // Take top 3
-  const results = finalCandidates.slice(0, 3);
+  const results = finalCandidates.slice(0, 20);
 
-  // Layered Fallback if we have fewer than 3 items
-  // Layer A: Matches brand + category, but goes over budget
-  if (results.length < 3 && categoryFilteredCandidates.length > results.length) {
-    const existingIds = new Set(results.map(r => r.name));
+  // Fallbacks if we have too few items
+  if (results.length < 10 && categoryFilteredCandidates.length > results.length) {
+    const existingNames = new Set(results.map(r => r.name));
     const fallbacks = categoryFilteredCandidates
-      .filter(item => !existingIds.has(item.name))
+      .filter(item => !existingNames.has(item.name))
       .sort((a, b) => b.similarity - a.similarity);
     
     for (const item of fallbacks) {
-      if (results.length >= 3) break;
+      if (results.length >= 20) break;
       results.push(item);
     }
   }
 
-  // Layer B: Matches brand + budget, but any category
-  if (results.length < 3 && brandFilteredCandidates.length > results.length) {
-    const existingIds = new Set(results.map(r => r.name));
+  if (results.length < 10 && brandFilteredCandidates.length > results.length) {
+    const existingNames = new Set(results.map(r => r.name));
     const fallbacks = brandFilteredCandidates
-      .filter(item => item.price <= budget && !existingIds.has(item.name))
+      .filter(item => item.price <= budget && !existingNames.has(item.name))
       .sort((a, b) => b.similarity - a.similarity);
     
     for (const item of fallbacks) {
-      if (results.length >= 3) break;
+      if (results.length >= 20) break;
       results.push(item);
     }
   }
 
-  // Layer C: Matches brand, any budget, any category
-  if (results.length < 3 && brandFilteredCandidates.length > results.length) {
-    const existingIds = new Set(results.map(r => r.name));
-    const fallbacks = brandFilteredCandidates
-      .filter(item => !existingIds.has(item.name))
-      .sort((a, b) => b.similarity - a.similarity);
-    
-    for (const item of fallbacks) {
-      if (results.length >= 3) break;
-      results.push(item);
-    }
-  }
-
-  // Layer D: Matches category + budget, any brand (only if brand was NOT strictly selected or if we ran out of brand items)
-  if (results.length < 3) {
-    const existingIds = new Set(results.map(r => r.name));
-    let categoryBudgetFallbacks = scoredItems.filter(item => item.price <= budget && !existingIds.has(item.name));
-    if (categoryFilter) {
-      categoryBudgetFallbacks = categoryBudgetFallbacks.filter(item => {
-        if (categoryFilter === 'pants') return item.category === 'pants' || item.category === 'jeans';
-        if (categoryFilter === 'jeans') return item.category === 'jeans' || item.category === 'pants';
-        if (categoryFilter === 't-shirt') return item.category === 't-shirt' || item.category === 'shirt';
-        if (categoryFilter === 'shirt') return item.category === 'shirt' || item.category === 't-shirt';
-        return item.category === categoryFilter;
-      });
-    }
-    categoryBudgetFallbacks.sort((a, b) => b.similarity - a.similarity);
-    
-    for (const item of categoryBudgetFallbacks) {
-      if (results.length >= 3) break;
-      results.push(item);
-    }
-  }
-
-  // Layer E: Any item under budget
-  if (results.length < 3) {
-    const existingIds = new Set(results.map(r => r.name));
-    const finalFallbacks = scoredItems
-      .filter(item => item.price <= budget && !existingIds.has(item.name))
+  if (results.length < 20) {
+    const existingNames = new Set(results.map(r => r.name));
+    const finalFallbacks = genderFilteredItems
+      .filter(item => item.price <= budget && !existingNames.has(item.name))
       .sort((a, b) => b.similarity - a.similarity);
     for (const item of finalFallbacks) {
-      if (results.length >= 3) break;
+      if (results.length >= 20) break;
       results.push(item);
     }
   }
 
-  // 9. Personalize reasoning based on actual wardrobe items!
+  return results;
+};
+
+/**
+ * 4. Shopping Assistant Recommendations
+ */
+export const getShoppingSuggestions = async (wardrobeItems, query, filters) => {
+  if (!genAI) {
+    return runMockShoppingSuggestions(wardrobeItems, query, filters);
+  }
+
+  try {
+    const candidates = getSortedCandidates(wardrobeItems, query, filters).slice(0, 15);
+    
+    if (candidates.length === 0) {
+      return runMockShoppingSuggestions(wardrobeItems, query, filters);
+    }
+
+    const model = getModelWithOptions("gemini-2.5-flash");
+    const prompt = `
+      You are a personalized AI fashion shopping assistant.
+      Select the top 3 best matching clothing items for the user from the Candidate Items List below.
+      The user's search query is: "${query}"
+
+      User's Current Wardrobe:
+      ${JSON.stringify(wardrobeItems.map(i => ({ category: i.category, color: i.color, style: i.style, pattern: i.pattern })), null, 2)}
+
+      Candidate Items List (you MUST select ONLY from these items by index):
+      ${JSON.stringify(candidates.map((item, idx) => ({ index: idx, name: item.name, brand: item.brand, price: item.price, category: item.category, color: item.color, style: item.style, description: item.description })), null, 2)}
+
+      Return ONLY a JSON array of 3 objects representing your selection.
+      Each object must contain:
+      - "index": Number (the index of the selected item in the Candidate Items List)
+      - "matchReason": String (detailed explanation of exactly which item in the user's wardrobe it pairs with and why it fits their search occasion)
+
+      Do not return markdown format or any text outside of the JSON array.
+      JSON structure:
+      [
+        {
+          "index": 0,
+          "matchReason": "string"
+        }
+      ]
+    `;
+
+    const result = await model.generateContent([prompt]);
+    const responseText = result.response.text().trim();
+    
+    // Robust extraction of JSON array
+    let jsonStart = responseText.indexOf('[');
+    let jsonEnd = responseText.lastIndexOf(']');
+    if (jsonStart === -1 || jsonEnd === -1) {
+      jsonStart = responseText.indexOf('{');
+      jsonEnd = responseText.lastIndexOf('}');
+    }
+    if (jsonStart === -1 || jsonEnd === -1) {
+      throw new Error("Could not find JSON structure in model response");
+    }
+    const cleanedJson = responseText.substring(jsonStart, jsonEnd + 1);
+    const parsed = JSON.parse(cleanedJson);
+    const selections = Array.isArray(parsed) ? parsed : [parsed];
+    
+    return selections.map((sel, idx) => {
+      const item = (sel.index !== undefined && candidates[sel.index] !== undefined) 
+        ? candidates[sel.index] 
+        : candidates[idx % candidates.length];
+      
+      const searchTerms = item.name.toLowerCase().startsWith(item.brand.toLowerCase())
+        ? item.name
+        : `${item.brand} ${item.name}`;
+      const formattedTerms = searchTerms.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const platforms = ['myntra', 'ajio', 'amazon'];
+      const platform = platforms[(idx + item.price) % platforms.length];
+      let purchaseLink;
+      if (platform === 'ajio') {
+        purchaseLink = `https://www.ajio.com/search/?text=${encodeURIComponent(searchTerms)}`;
+      } else if (platform === 'amazon') {
+        purchaseLink = `https://www.amazon.in/s?k=${encodeURIComponent(searchTerms)}`;
+      } else {
+        purchaseLink = `https://www.myntra.com/${formattedTerms}?rawQuery=${encodeURIComponent(searchTerms)}`;
+      }
+
+      return {
+        name: item.name,
+        brand: item.brand,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        purchaseLink,
+        matchReason: sel.matchReason || `Matches your ${query} search parameters.`
+      };
+    });
+  } catch (error) {
+    console.error("Error in Gemini Shopping Assistant:", error);
+    return runMockShoppingSuggestions(wardrobeItems, query, filters);
+  }
+};
+
+const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
+  const candidates = getSortedCandidates(wardrobeItems, query, filters).slice(0, 3);
+  
   const sampleBottom = wardrobeItems.find(i => ['pants', 'jeans', 'shorts'].includes(i.category)) || { color: 'dark', category: 'jeans' };
   const sampleTop = wardrobeItems.find(i => ['shirt', 't-shirt'].includes(i.category)) || { color: 'white', category: 't-shirt' };
 
-  return results.map(item => {
-    // Generate dynamic match reasons
+  return candidates.map((item, idx) => {
     let matchReason = `Matches your style criteria.`;
     if (item.category === 'shirt' || item.category === 't-shirt') {
       matchReason = `Pairs beautifully with the ${sampleBottom.color} ${sampleBottom.category} in your wardrobe, adding a versatile, coordinated layering option.`;
@@ -595,9 +626,10 @@ const runMockShoppingSuggestions = (wardrobeItems, query, filters) => {
       matchReason = `An essential layering piece to complete your ${sampleTop.color} tops and elevate your styling depth.`;
     }
 
-    const searchTerms = `${item.brand} ${item.name}`;
+    const searchTerms = item.name.toLowerCase().startsWith(item.brand.toLowerCase())
+      ? item.name
+      : `${item.brand} ${item.name}`;
     const formattedTerms = searchTerms.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    
     const platforms = ['myntra', 'ajio', 'amazon'];
     const platform = platforms[(item.brand.length + item.price) % platforms.length];
     let purchaseLink;
