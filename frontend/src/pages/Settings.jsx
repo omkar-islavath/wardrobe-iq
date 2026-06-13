@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
-import { User, Settings, CheckCircle, Loader2, Camera } from 'lucide-react';
+import { User, Settings, CheckCircle, Loader2, Camera, Eye, X } from 'lucide-react';
 
 const SettingsPage = () => {
   const { user, updateStyleProfile, setUser } = useContext(AuthContext);
@@ -11,6 +11,32 @@ const SettingsPage = () => {
   const [favoriteOccasionWear, setFavoriteOccasionWear] = useState(user?.styleProfile?.favoriteOccasionWear || 'casual outing');
   const [loading, setLoading] = useState(false);
   const [photoLoading, setPhotoLoading] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showLightbox, setShowLightbox] = useState(false);
+  const fileInputRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+
+  const triggerFileSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+    setShowMenu(false);
+  };
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
@@ -87,28 +113,59 @@ const SettingsPage = () => {
 
       <div className="glass-panel p-6 rounded-3xl space-y-6">
         <div className="flex items-center gap-4">
-          <div className="relative group cursor-pointer w-16 h-16 rounded-full overflow-hidden border-4 border-indigo-500/20 shadow-lg shrink-0">
-            {photoLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-900/60 z-10">
-                <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
-              </div>
-            ) : null}
-            <img
-              src={getProfileImage(user?.profilePhoto)}
-              alt="Profile photo"
-              className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-            />
-            <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 opacity-0 group-hover:opacity-100 transition duration-300 cursor-pointer">
-              <Camera className="w-4 h-4 text-white mb-0.5" />
-              <span className="text-[8px] text-white font-extrabold tracking-wider uppercase">Change</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                className="hidden"
-                disabled={photoLoading}
+          <div className="relative shrink-0" ref={menuRef}>
+            <div 
+              onClick={() => setShowMenu(!showMenu)}
+              className="relative group cursor-pointer w-16 h-16 rounded-full overflow-hidden border-4 border-indigo-500/20 shadow-lg"
+            >
+              {photoLoading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/60 z-10">
+                  <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
+                </div>
+              ) : null}
+              <img
+                src={getProfileImage(user?.profilePhoto)}
+                alt="Profile photo"
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
               />
-            </label>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 opacity-0 group-hover:opacity-100 transition duration-300">
+                <Camera className="w-4 h-4 text-white mb-0.5" />
+                <span className="text-[8px] text-white font-extrabold tracking-wider uppercase">Options</span>
+              </div>
+            </div>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+              disabled={photoLoading}
+            />
+
+            {showMenu && (
+              <div className="absolute left-0 mt-2 w-40 rounded-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-1 duration-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLightbox(true);
+                    setShowMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-800/70 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  View Photo
+                </button>
+                <button
+                  type="button"
+                  onClick={triggerFileSelect}
+                  className="flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-800/70 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  Change Photo
+                </button>
+              </div>
+            )}
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">{user?.name}</h3>
@@ -193,6 +250,33 @@ const SettingsPage = () => {
           </div>
         </form>
       </div>
+
+      {/* Lightbox Modal */}
+      {showLightbox && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div 
+            className="fixed inset-0" 
+            onClick={() => setShowLightbox(false)}
+          />
+          <div className="relative max-w-sm w-full bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-3xl p-6 shadow-2xl z-10 flex flex-col items-center animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setShowLightbox(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition duration-200"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="w-64 h-64 rounded-2xl overflow-hidden border-2 border-indigo-500/20 shadow-xl mt-4 mb-4">
+              <img
+                src={getProfileImage(user?.profilePhoto)}
+                alt="Profile photo preview"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{user?.name}</h4>
+            <p className="text-xs text-slate-400 mt-1">{user?.email}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

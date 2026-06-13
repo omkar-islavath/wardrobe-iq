@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
 import User from '../models/User.js';
 
 // Generate JWT Token
@@ -184,18 +186,62 @@ export const uploadProfilePhoto = async (req, res) => {
     const user = await User.findByPk(req.user.id);
 
     if (!user) {
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    const relativePath = `/uploads/${req.file.filename}`;
-    user.profilePhoto = relativePath;
+    const filePath = req.file.path;
+    let profilePhotoUrl = '';
+    let isCloudinary = false;
+
+    if (process.env.CLOUDINARY_URL) {
+      try {
+        const url = process.env.CLOUDINARY_URL;
+        const matches = url.match(/cloudinary:\/\/([^:]+):([^@]+)@([^?#]+)/);
+        if (matches) {
+          cloudinary.config({
+            api_key: matches[1],
+            api_secret: matches[2],
+            cloud_name: matches[3],
+            secure: true
+          });
+        }
+        
+        const uploadResult = await cloudinary.uploader.upload(filePath, {
+          folder: 'profile_photos',
+        });
+        profilePhotoUrl = uploadResult.secure_url;
+        isCloudinary = true;
+      } catch (cloudinaryErr) {
+        console.error("Cloudinary upload failed, falling back to local storage:", cloudinaryErr.message);
+        profilePhotoUrl = `/uploads/${req.file.filename}`;
+      }
+    } else {
+      profilePhotoUrl = `/uploads/${req.file.filename}`;
+    }
+
+    // Only remove local file if we successfully uploaded to Cloudinary
+    if (isCloudinary && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    user.profilePhoto = profilePhotoUrl;
     await user.save();
 
     res.json({
       success: true,
-      profilePhoto: relativePath,
+      profilePhoto: profilePhotoUrl,
     });
   } catch (error) {
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkErr) {
+        console.error("Failed to delete temp file on upload error:", unlinkErr.message);
+      }
+    }
     console.error(error);
     res.status(500).json({ success: false, error: error.message });
   }
