@@ -150,10 +150,6 @@ export const updateStyleProfile = async (req, res) => {
 
       user.styleProfile = newProfile;
 
-      if (req.body.profilePhoto !== undefined) {
-        user.profilePhoto = req.body.profilePhoto;
-      }
-
       await user.save();
       
       res.json({
