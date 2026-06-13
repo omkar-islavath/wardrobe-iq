@@ -29,28 +29,41 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        // 1. Fetch Wardrobe items
-        const wardrobeRes = await api.get('/wardrobe');
+        const preferredOccasion = user?.styleProfile?.favoriteOccasionWear || 'casual outing';
+
+        // Fetch all 4 endpoints in parallel to speed up load times significantly
+        const [wardrobeRes, historyRes, gapsRes, recRes] = await Promise.all([
+          api.get('/wardrobe').catch(err => {
+            console.error("Dashboard count fetch error:", err);
+            return { data: { success: false } };
+          }),
+          api.get('/outfits/history').catch(err => {
+            console.error("Dashboard history fetch error:", err);
+            return { data: { success: false } };
+          }),
+          api.get('/shopping/gap-analysis').catch(err => {
+            console.error("Dashboard gaps fetch error:", err);
+            return { data: { success: false } };
+          }),
+          api.post('/outfits/generate', { occasion: preferredOccasion }).catch(err => {
+            console.error("Dashboard recommendations fetch error:", err);
+            return { data: { success: false } };
+          })
+        ]);
+
         if (wardrobeRes.data.success) {
           setItemCount(wardrobeRes.data.count);
         }
 
-        // 2. Fetch Outfit history
-        const historyRes = await api.get('/outfits/history');
         if (historyRes.data.success) {
           const wornOnly = historyRes.data.history.filter(o => o.dateWorn).slice(0, 3);
           setRecentWorn(wornOnly);
         }
 
-        // 3. Fetch Wardrobe gaps
-        const gapsRes = await api.get('/shopping/gap-analysis');
         if (gapsRes.data.success) {
           setGaps(gapsRes.data.analysis.gaps.slice(0, 2));
         }
 
-        // 4. Generate recommendations based on preferred style or 'casual outing'
-        const preferredOccasion = user?.styleProfile?.favoriteOccasionWear || 'casual outing';
-        const recRes = await api.post('/outfits/generate', { occasion: preferredOccasion });
         if (recRes.data.success) {
           setWeather(recRes.data.weather);
           setRecommendations(recRes.data.recommendations.slice(0, 3));

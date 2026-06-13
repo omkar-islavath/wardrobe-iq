@@ -106,6 +106,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateStyleProfile,
+        setUser,
       }}
     >
       {children}

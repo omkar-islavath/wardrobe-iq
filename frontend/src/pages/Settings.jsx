@@ -1,14 +1,51 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { User, Settings, CheckCircle, Loader2 } from 'lucide-react';
+import api from '../services/api';
+import { User, Settings, CheckCircle, Loader2, Camera } from 'lucide-react';
 
 const SettingsPage = () => {
-  const { user, updateStyleProfile } = useContext(AuthContext);
+  const { user, updateStyleProfile, setUser } = useContext(AuthContext);
   const [name, setName] = useState(user?.name || '');
   const [gender, setGender] = useState(user?.gender || 'male');
   const [preferredStyle, setPreferredStyle] = useState(user?.styleProfile?.preferredStyle || 'casual');
   const [favoriteOccasionWear, setFavoriteOccasionWear] = useState(user?.styleProfile?.favoriteOccasionWear || 'casual outing');
   const [loading, setLoading] = useState(false);
+  const [photoLoading, setPhotoLoading] = useState(false);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('profilePhoto', file);
+
+    setPhotoLoading(true);
+    try {
+      const res = await api.post('/auth/profile-photo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (res.data.success) {
+        setUser({
+          ...user,
+          profilePhoto: res.data.profilePhoto,
+        });
+        alert('Profile photo updated successfully!');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload profile photo');
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,11 +87,29 @@ const SettingsPage = () => {
 
       <div className="glass-panel p-6 rounded-3xl space-y-6">
         <div className="flex items-center gap-4">
-          <img
-            src={getProfileImage(user?.profilePhoto)}
-            alt="Profile photo"
-            className="w-16 h-16 rounded-full object-cover border-4 border-indigo-500/20"
-          />
+          <div className="relative group cursor-pointer w-16 h-16 rounded-full overflow-hidden border-4 border-indigo-500/20 shadow-lg shrink-0">
+            {photoLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-900/60 z-10">
+                <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
+              </div>
+            ) : null}
+            <img
+              src={getProfileImage(user?.profilePhoto)}
+              alt="Profile photo"
+              className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+            />
+            <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 opacity-0 group-hover:opacity-100 transition duration-300 cursor-pointer">
+              <Camera className="w-4 h-4 text-white mb-0.5" />
+              <span className="text-[8px] text-white font-extrabold tracking-wider uppercase">Change</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+                disabled={photoLoading}
+              />
+            </label>
+          </div>
           <div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">{user?.name}</h3>
             <p className="text-xs text-slate-400 mt-1">{user?.email}</p>
