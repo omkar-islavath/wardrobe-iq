@@ -66,14 +66,14 @@ const OutfitGenerator = () => {
   const handleSaveOutfit = async (rec) => {
     try {
       const res = await api.post('/outfits/save', {
-        outfitItems: rec.outfitItems.map(i => i._id),
+        outfitItems: rec.outfitItems.map(i => i.id),
         occasion,
         score: rec.score,
         scoreBreakdown: rec.scoreBreakdown,
       });
 
       if (res.data.success) {
-        setSavedOutfitIds([...savedOutfitIds, res.data.outfit._id]);
+        setSavedOutfitIds([...savedOutfitIds, res.data.outfit.id]);
         alert('Outfit saved to history!');
       }
     } catch (err) {
@@ -87,14 +87,14 @@ const OutfitGenerator = () => {
       // First save if not saved, or we can check if it's already saved.
       // For simplicity, we create a saved record and immediately log it as worn!
       const saveRes = await api.post('/outfits/save', {
-        outfitItems: rec.outfitItems.map(i => i._id),
+        outfitItems: rec.outfitItems.map(i => i.id),
         occasion,
         score: rec.score,
         scoreBreakdown: rec.scoreBreakdown,
       });
 
       if (saveRes.data.success) {
-        const outfitId = saveRes.data.outfit._id;
+        const outfitId = saveRes.data.outfit.id;
         const wearRes = await api.post(`/outfits/${outfitId}/wear`);
         if (wearRes.data.success) {
           alert('Outfit logged in your calendar as worn today!');

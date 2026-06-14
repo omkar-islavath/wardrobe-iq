@@ -357,13 +357,8 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
 
     const totalScore = colorScore + occasionScore + weatherScore + preferenceScore + freshnessScore;
 
-    // Convert items to map MongoDB _id to Postgres id for frontend compatibility
     const mappedItems = items.map(i => {
-      const itemData = (typeof i.toJSON === 'function') ? i.toJSON() : i;
-      return {
-        ...itemData,
-        _id: i.id
-      };
+      return (typeof i.toJSON === 'function') ? i.toJSON() : i;
     });
 
     combinations.push({
@@ -398,11 +393,7 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
     const totalScore = colorScore + occasionScore + weatherScore + preferenceScore + freshnessScore;
 
     const mappedItems = items.map(i => {
-      const itemData = (typeof i.toJSON === 'function') ? i.toJSON() : i;
-      return {
-        ...itemData,
-        _id: i.id
-      };
+      return (typeof i.toJSON === 'function') ? i.toJSON() : i;
     });
 
     combinations.push({
@@ -456,8 +447,8 @@ export const generateOutfitRecommendations = async (user, wardrobeItems, occasio
       return b.score - a.score;
     }
     // Stable secondary sort using stringified sorted item IDs
-    const aIds = a.outfitItems.map(i => String(i.id || i._id || '')).sort().join(',');
-    const bIds = b.outfitItems.map(i => String(i.id || i._id || '')).sort().join(',');
+    const aIds = a.outfitItems.map(i => String(i.id || '')).sort().join(',');
+    const bIds = b.outfitItems.map(i => String(i.id || '')).sort().join(',');
     return aIds.localeCompare(bIds);
   });
 

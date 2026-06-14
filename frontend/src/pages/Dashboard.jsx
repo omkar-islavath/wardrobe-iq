@@ -77,20 +77,31 @@ const Dashboard = () => {
 
     fetchDashboardData();
   }, [user]);
-
-  const handleLogWorn = async (outfitId) => {
+  const handleLogWorn = async (rec) => {
     try {
-      const res = await api.post(`/outfits/${outfitId}/wear`);
-      if (res.data.success) {
-        // Refresh history
-        const historyRes = await api.get('/outfits/history');
-        if (historyRes.data.success) {
-          setRecentWorn(historyRes.data.history.filter(o => o.dateWorn).slice(0, 3));
+      const preferredOccasion = user?.styleProfile?.favoriteOccasionWear || 'casual outing';
+      const saveRes = await api.post('/outfits/save', {
+        outfitItems: rec.outfitItems.map(i => i.id),
+        occasion: preferredOccasion,
+        score: rec.score,
+        scoreBreakdown: rec.scoreBreakdown,
+      });
+
+      if (saveRes.data.success) {
+        const outfitId = saveRes.data.outfit.id;
+        const res = await api.post(`/outfits/${outfitId}/wear`);
+        if (res.data.success) {
+          // Refresh history
+          const historyRes = await api.get('/outfits/history');
+          if (historyRes.data.success) {
+            setRecentWorn(historyRes.data.history.filter(o => o.dateWorn).slice(0, 3));
+          }
+          alert("Outfit successfully logged in your calendar!");
         }
-        alert("Outfit successfully logged in your calendar!");
       }
     } catch (err) {
       console.error(err);
+      alert("Failed to log wear event");
     }
   };
 
@@ -262,7 +273,7 @@ const Dashboard = () => {
 
                   <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800">
                     <button
-                      onClick={() => handleLogWorn(rec._id || index)}
+                      onClick={() => handleLogWorn(rec)}
                       className="w-full text-center py-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                     >
                       Wear Today

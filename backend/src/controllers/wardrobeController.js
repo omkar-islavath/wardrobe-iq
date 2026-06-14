@@ -100,10 +100,7 @@ export const uploadClothingItem = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Item uploaded and analyzed successfully',
-      item: {
-        ...wardrobeItem.toJSON(),
-        _id: wardrobeItem.id // preserve _id for frontend compatibility
-      }
+      item: wardrobeItem.toJSON(),
     });
   } catch (error) {
     console.error("Upload error:", error);
@@ -167,16 +164,10 @@ export const getClothingItems = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    // Map output to preserve MongoDB _id field name for frontend compatibility
-    const mappedItems = items.map(item => ({
-      ...item.toJSON(),
-      _id: item.id
-    }));
-
     res.json({
       success: true,
-      count: mappedItems.length,
-      items: mappedItems,
+      count: items.length,
+      items: items,
     });
   } catch (error) {
     console.error(error);
@@ -201,10 +192,7 @@ export const getSingleItem = async (req, res) => {
 
     res.json({
       success: true,
-      item: {
-        ...item.toJSON(),
-        _id: item.id
-      },
+      item: item.toJSON(),
     });
   } catch (error) {
     console.error(error);
@@ -251,10 +239,7 @@ export const updateClothingItem = async (req, res) => {
     res.json({
       success: true,
       message: 'Garment updated successfully',
-      item: {
-        ...updatedItem.toJSON(),
-        _id: updatedItem.id
-      },
+      item: updatedItem.toJSON(),
     });
   } catch (error) {
     console.error(error);

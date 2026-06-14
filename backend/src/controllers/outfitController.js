@@ -7,7 +7,6 @@ import { generateOutfitRecommendations } from '../services/RecommendationEngine.
 const simulatedEssentials = {
   'simulated-top': {
     id: 'simulated-top',
-    _id: 'simulated-top',
     category: 'shirt',
     color: 'white',
     style: 'casual',
@@ -20,7 +19,6 @@ const simulatedEssentials = {
   },
   'simulated-bottom': {
     id: 'simulated-bottom',
-    _id: 'simulated-bottom',
     category: 'jeans',
     color: 'black',
     style: 'casual',
@@ -33,7 +31,6 @@ const simulatedEssentials = {
   },
   'simulated-shoes': {
     id: 'simulated-shoes',
-    _id: 'simulated-shoes',
     category: 'shoes',
     color: 'white',
     style: 'casual',
@@ -69,10 +66,7 @@ const populateOutfitItems = async (outfit) => {
 
   const dbItemsMap = {};
   dbItems.forEach(item => {
-    dbItemsMap[String(item.id)] = {
-      ...item.toJSON(),
-      _id: item.id
-    };
+    dbItemsMap[String(item.id)] = item.toJSON();
   });
 
   const populated = outfitItems.map(id => {
@@ -81,7 +75,6 @@ const populateOutfitItems = async (outfit) => {
       return simulatedEssentials[idStr];
     }
     return dbItemsMap[idStr] || {
-      _id: idStr,
       id: idStr,
       category: 'garment',
       color: 'neutral',
@@ -94,7 +87,6 @@ const populateOutfitItems = async (outfit) => {
 
   return {
     ...outfit.toJSON(),
-    _id: outfit.id,
     outfitItems: populated
   };
 };

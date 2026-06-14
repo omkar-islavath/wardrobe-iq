@@ -74,7 +74,7 @@ const UploadClothing = () => {
   const handleFinalSave = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.put(`/wardrobe/${analyzedItem._id}`, analyzedItem);
+      const res = await api.put(`/wardrobe/${analyzedItem.id}`, analyzedItem);
       if (res.data.success) {
         navigate('/wardrobe');
       }

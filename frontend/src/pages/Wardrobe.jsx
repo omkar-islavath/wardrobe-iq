@@ -109,11 +109,11 @@ const Wardrobe = () => {
         tags: editForm.tags.split(',').map(tag => tag.trim()).filter(Boolean),
       };
 
-      const res = await api.put(`/wardrobe/${selectedItem._id}`, payload);
+      const res = await api.put(`/wardrobe/${selectedItem.id}`, payload);
       if (res.data.success) {
         // Update local items array
         setItems(prevItems =>
-          prevItems.map(item => (item._id === selectedItem._id ? res.data.item : item))
+          prevItems.map(item => (item.id === selectedItem.id ? res.data.item : item))
         );
         setSelectedItem(res.data.item);
         setIsEditing(false);
@@ -131,7 +131,7 @@ const Wardrobe = () => {
     try {
       const res = await api.delete(`/wardrobe/${itemId}`);
       if (res.data.success) {
-        setItems(prevItems => prevItems.filter(item => item._id !== itemId));
+        setItems(prevItems => prevItems.filter(item => item.id !== itemId));
         setSelectedItem(null);
       }
     } catch (err) {
@@ -280,7 +280,7 @@ const Wardrobe = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {items.map((item) => (
             <div
-              key={item._id}
+              key={item.id}
               onClick={() => handleOpenDetail(item)}
               className="glass-card rounded-2xl overflow-hidden cursor-pointer flex flex-col h-full"
             >
@@ -397,7 +397,7 @@ const Wardrobe = () => {
                       Edit details
                     </button>
                     <button
-                      onClick={() => handleDeleteItem(selectedItem._id)}
+                      onClick={() => handleDeleteItem(selectedItem.id)}
                       className="py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

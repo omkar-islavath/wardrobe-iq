@@ -37,7 +37,7 @@ export const registerUser = async (req, res) => {
         success: true,
         token: generateToken(user.id),
         user: {
-          _id: user.id, // preserve _id for frontend compatibility
+          id: user.id,
           name: user.name,
           email: user.email,
           profilePhoto: user.profilePhoto,
@@ -70,7 +70,7 @@ export const loginUser = async (req, res) => {
         success: true,
         token: generateToken(user.id),
         user: {
-          _id: user.id, // preserve _id for frontend compatibility
+          id: user.id,
           name: user.name,
           email: user.email,
           profilePhoto: user.profilePhoto,
@@ -99,10 +99,7 @@ export const getUserProfile = async (req, res) => {
     if (user) {
       res.json({
         success: true,
-        user: {
-          ...user.toJSON(),
-          _id: user.id // preserve _id for frontend compatibility
-        },
+        user: user.toJSON(),
       });
     } else {
       res.status(404).json({ success: false, error: 'User not found' });
@@ -154,10 +151,7 @@ export const updateStyleProfile = async (req, res) => {
       
       res.json({
         success: true,
-        user: {
-          ...user.toJSON(),
-          _id: user.id // preserve _id for frontend compatibility
-        },
+        user: user.toJSON(),
       });
     } else {
       res.status(404).json({ success: false, error: 'User not found' });

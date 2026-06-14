@@ -41,7 +41,7 @@ const OutfitHistory = () => {
       if (res.data.success) {
         setHistory(prevHistory =>
           prevHistory.map(item =>
-            item._id === outfitId ? { ...item, isFavorite: res.data.isFavorite } : item
+            item.id === outfitId ? { ...item, isFavorite: res.data.isFavorite } : item
           )
         );
       }
@@ -55,7 +55,7 @@ const OutfitHistory = () => {
     try {
       const res = await api.delete(`/outfits/${outfitId}`);
       if (res.data.success) {
-        setHistory(prevHistory => prevHistory.filter(item => item._id !== outfitId));
+        setHistory(prevHistory => prevHistory.filter(item => item.id !== outfitId));
       }
     } catch (err) {
       console.error(err);
@@ -143,7 +143,7 @@ const OutfitHistory = () => {
           <div className="space-y-4">
             {history.map((item) => (
               <div
-                key={item._id}
+                key={item.id}
                 className="glass-panel p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
               >
                 {/* Outfit Info */}
@@ -187,7 +187,7 @@ const OutfitHistory = () => {
                 <div className="flex items-center gap-3 w-full md:w-auto justify-end pt-4 md:pt-0 border-t border-slate-200 dark:border-slate-800 md:border-0">
                   {!item.dateWorn && (
                     <button
-                      onClick={() => handleLogWear(item._id)}
+                      onClick={() => handleLogWear(item.id)}
                       className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition"
                     >
                       Wear Today
@@ -195,7 +195,7 @@ const OutfitHistory = () => {
                   )}
 
                   <button
-                    onClick={() => handleToggleFavorite(item._id)}
+                    onClick={() => handleToggleFavorite(item.id)}
                     className={`p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors ${
                       item.isFavorite ? 'text-red-500 border-red-500/20 bg-red-500/5' : 'text-slate-400'
                     }`}
@@ -204,8 +204,8 @@ const OutfitHistory = () => {
                   </button>
 
                   <button
-                    onClick={() => handleDelete(item._id)}
-                    className="p-2.5 rounded-xl border border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500 hover:text-white transition"
+                    onClick={() => handleDelete(item.id)}
+                    className="p-2.5 rounded-xl border border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-505 hover:text-white transition"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -229,7 +229,7 @@ const OutfitHistory = () => {
             <h3 className="text-lg font-bold">Chronological Wear History</h3>
             <div className="relative border-l border-indigo-500/20 dark:border-indigo-500/10 pl-6 ml-4 space-y-6">
               {wornOutfits.map((item, idx) => (
-                <div key={item._id} className="relative">
+                <div key={item.id} className="relative">
                   {/* Timeline dot */}
                   <span className="absolute -left-[31px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-500 ring-8 ring-white dark:ring-slate-950">
                     <span className="h-1.5 w-1.5 rounded-full bg-white" />
