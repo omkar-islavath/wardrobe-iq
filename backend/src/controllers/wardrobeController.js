@@ -64,8 +64,8 @@ export const uploadClothingItem = async (req, res) => {
       };
     }
 
-    // Ensure local temp file is removed
-    if (fs.existsSync(filePath)) {
+    // Ensure local temp file is removed only if we successfully uploaded to Cloudinary (i.e. imageUrl is not a local /uploads/ path)
+    if (!imageUrl.startsWith('/uploads/') && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
